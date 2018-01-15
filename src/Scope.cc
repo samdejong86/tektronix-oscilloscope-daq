@@ -29,7 +29,8 @@ void Scope::OpenScope()
   }
 
   // Connect to scope.
-  status = viOpen (defaultRM, SCOPE_ADDR, VI_NULL, VI_NULL, &scope);
+  char address[] = SCOPE_ADDR;
+  status = viOpen (defaultRM, (ViChar*)address, VI_NULL, VI_NULL, &scope);
   if ( status < VI_SUCCESS )
   {
     printf ("Cannot open session to scope.\n");
@@ -99,7 +100,7 @@ void Scope::CloseScope()
   return;
 }
 
-void Scope::TekCmd(char *cmd)
+void Scope::TekCmd(string cmd)
 {
   /*
     Generic scope command writer.
@@ -107,22 +108,22 @@ void Scope::TekCmd(char *cmd)
 
   if ( Parameters.TEK_Verbose )
   {
-    printf ("Command sent to scope: %s\n", cmd);
+    cout<<"Command sent to scope: "<<cmd<<endl;
   }
 
-  status = viWrite (scope, (ViBuf) cmd, strlen (cmd), &retCount);
+  status = viWrite (scope, (ViBuf) cmd.c_str(), strlen (cmd.c_str()), &retCount);
 
   if (status < VI_SUCCESS)
   {
     viStatusDesc (scope, status, desc);
-    printf ("Error writing to scope: %s\n", cmd);
-    printf ("Status description: %s\n",(char *) desc);
+    cout<<"Error writing to scope: "<<cmd<<endl;
+    cout<<"Status description: "<<desc<<endl;
     ShutDown ();
   }
   return;
 }
 
-void Scope::TekQry(char *cmd, char rtn[SLEN])
+void Scope::TekQry(string cmd, char rtn[SLEN])
 {
   /*
     Generic scope query.
@@ -134,8 +135,9 @@ void Scope::TekQry(char *cmd, char rtn[SLEN])
   if (status < VI_SUCCESS)
   {
     viStatusDesc (scope, status, desc);
-    printf ("Error reading from scope: %s\n",cmd);
-    printf ("Status description: %s\n",(char *) desc);
+
+    cout<<"Error writing to scope: "<<cmd<<endl;
+    cout<<"Status description: "<<desc<<endl;
     ShutDown ();
   }
   else
@@ -151,7 +153,7 @@ void Scope::TekQry(char *cmd, char rtn[SLEN])
 }
 
 
-int Scope::WavQry(char *cmd, char rtn[CLEN])
+int Scope::WavQry(string cmd, char rtn[CLEN])
 {
   /*
     Read waveform from scope.
@@ -163,8 +165,8 @@ int Scope::WavQry(char *cmd, char rtn[CLEN])
   if (status < VI_SUCCESS)
   {
     viStatusDesc (scope, status, desc);
-    printf ("Error reading from scope: %s\n",cmd);
-    printf ("Status description: %s\n",(char *) desc);
+    cout<<"Error writing to scope: "<<cmd<<endl;
+    cout<<"Status description: "<<desc<<endl;
     ShutDown ();
   }
   else
@@ -633,68 +635,6 @@ void Scope::ShutDown()
   exit (0);
 }
 
-void Scope::LogIt(FILE *fp, int event)
-{
-  /*
-    Log the results in the ouput file.
-  */
-
-  int i, j;
-  static int kilroy=0;
-  time_t TestTime;
-
-  if (Parameters.TEK_Verbose) {
-    if (event<0) {
-      printf ("header event - not logged...\n");
-    } else {
-      printf ("logging event number %d\n", event);
-    }
-  }
-
-  TestTime = time (NULL);
-
-  if ( fp != NULL )				// WriteToFile must be set to 1...
-  {
-
-    if ( event < 0 )				// waveform headers
-    {
-      for ( i=0; i<4; i++ )
-      {
-        if ( Parameters.get_wave[i] && Parameters.got_wave[i] )
-        {
-          for ( j=0; j<ByteCount[i]; j++ )
-          {
-            fputc (Curve[i][j], fp);		// Curve can have imbedded nulls; includes header...
-          }
-        }
-      }
-    }
-    else
-    {
-      fprintf (fp,"%d %li %0.3f %0.3f %0.3f %0.3f\n", event, TestTime, Parameters.CH1, Parameters.CH2, Parameters.CH3, Parameters.CH4);
-      for ( i=0; i<4; i++ )
-      {
-        if ( Parameters.get_wave[i] && Parameters.got_wave[i] )
-        {
-          for ( j=0; j<ByteCount[i]; j++ )
-          {
-            fputc (Curve[i][j], fp);		// Curve can have imbedded nulls; includes header...
-          }
-        }
-      }
-    }
-  }
-  else
-  {
-    if ( ! kilroy )
-    {
-      printf ("Warning!  Data is not being logged.\n");
-      kilroy = 1;
-    }
-  }
-
-  return;
-}
 
 void Scope::Counter(int n)
 {

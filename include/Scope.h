@@ -32,15 +32,14 @@ class Scope{
   void InitScope();
   void CloseScope();
 
-  void TekCmd(char *cmd);
-  void TekQry(char *, char *);
-  int WavQry(char *, char *);
+  void TekCmd(string cmd);
+  void TekQry(string, char *);
+  int WavQry(string cmd, char *);
   int AcquireData();
   void AcquireWaves();
   void ShutDown();
 
   void Counter(int n);
-  void LogIt(FILE *fp, int event);
 
 
   int rewrite;   // flag to write full report text
