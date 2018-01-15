@@ -1,0 +1,734 @@
+	
+
+using namespace std;
+
+#include "ScopeParameters.h"
+#include "tekdaq.h"
+#include "Scope.h"
+
+
+void Scope::OpenScope()
+{
+  /*
+     Get the Default Resource Manager and connect to scope.
+  */
+
+
+  char statdsc[100];
+  defaultRM = 0;
+  scope = 0;
+
+  // Open session to VISA Resource Manager.
+  status = viOpenDefaultRM (&defaultRM);
+  if ( status < VI_SUCCESS )
+  {
+    printf ("Cannot open session to VISA Resource Manager.\n");
+    viStatusDesc(defaultRM,status,statdsc);
+    printf("Error on viOpenDefaultRM: %s \n",statdsc);
+    exit (-1);
+  }
+
+  // Connect to scope.
+  status = viOpen (defaultRM, SCOPE_ADDR, VI_NULL, VI_NULL, &scope);
+  if ( status < VI_SUCCESS )
+  {
+    printf ("Cannot open session to scope.\n");
+    viStatusDesc(defaultRM,status,statdsc);
+    printf("Error on viOpen: %s \n",statdsc);
+    printf ("Cycle the scope power and try again.\n");
+    exit (-1);
+  }
+
+  // Set timeout value (milliseconds).
+  status = viSetAttribute (scope, VI_ATTR_TMO_VALUE, TOUT);
+  if ( status < VI_SUCCESS )
+  {
+    printf ("Cannot set timeout value.\n");
+    viStatusDesc(defaultRM,status,statdsc);
+    printf("Error on viSetAttribute: %s \n",statdsc);
+    ShutDown ();
+  }
+
+  // Clear the scope.
+  status = viClear (scope);
+  if (status < VI_SUCCESS)
+  {
+    printf ("Error clearing scope.\n");
+    viStatusDesc(defaultRM,status,statdsc);
+    printf("Error on viClear: %s \n",statdsc);
+    ShutDown ();
+  }
+
+  // Flush the read buffers
+  status = viFlush (scope, VI_READ_BUF);
+  if (status < VI_SUCCESS)
+  {
+    printf ("Error flushing scope.\n");
+    viStatusDesc(defaultRM,status,statdsc);
+    printf("Error on viFlush: %s \n",statdsc);
+    ShutDown ();
+  }
+
+  return;
+}
+
+void Scope::CloseScope()
+{
+  TekCmd ("ACQ:STATE OFF");	// acquire state set to OFF
+
+  TekCmd ("LOCK NONE");		// unlock the front panel control
+
+  if ( Parameters.TEK_Verbose )
+  {
+    printf ("Closing down the scope...\n");
+  }
+
+  //viClear (scope);		// this seems to sometimes leave the scope in a locked state...
+
+  if ( scope )
+  {
+    viClose (scope);
+  }
+  if ( defaultRM )
+  {
+    viClose (defaultRM);
+  }
+
+  fMan.CloseFile();
+
+  return;
+}
+
+void Scope::TekCmd(char *cmd)
+{
+  /*
+    Generic scope command writer.
+  */
+
+  if ( Parameters.TEK_Verbose )
+  {
+    printf ("Command sent to scope: %s\n", cmd);
+  }
+
+  status = viWrite (scope, (ViBuf) cmd, strlen (cmd), &retCount);
+
+  if (status < VI_SUCCESS)
+  {
+    viStatusDesc (scope, status, desc);
+    printf ("Error writing to scope: %s\n", cmd);
+    printf ("Status description: %s\n",(char *) desc);
+    ShutDown ();
+  }
+  return;
+}
+
+void Scope::TekQry(char *cmd, char rtn[SLEN])
+{
+  /*
+    Generic scope query.
+  */
+
+  TekCmd (cmd);
+  memset(rtn, 0, SLEN*sizeof(char));			// clear the read buffer
+  status = viRead (scope, (ViBuf) rtn, SLEN, &retCount);
+  if (status < VI_SUCCESS)
+  {
+    viStatusDesc (scope, status, desc);
+    printf ("Error reading from scope: %s\n",cmd);
+    printf ("Status description: %s\n",(char *) desc);
+    ShutDown ();
+  }
+  else
+  {
+    rtn[retCount] = '\0';
+    if ( Parameters.TEK_Verbose )
+    {
+      sscanf (rtn, "%[^\n]", rtn);
+      printf ("Query response read from scope: %s (%d bytes).\n", rtn, (int) retCount);
+    }
+  }
+  return;
+}
+
+
+int Scope::WavQry(char *cmd, char rtn[CLEN])
+{
+  /*
+    Read waveform from scope.
+  */
+
+  TekCmd (cmd);
+  memset(rtn, 0, CLEN*sizeof(char));			// clear the read buffer
+  status = viRead (scope, (ViBuf) rtn, CLEN, &retCount);
+  if (status < VI_SUCCESS)
+  {
+    viStatusDesc (scope, status, desc);
+    printf ("Error reading from scope: %s\n",cmd);
+    printf ("Status description: %s\n",(char *) desc);
+    ShutDown ();
+  }
+  else
+  {
+    if ( Parameters.TEK_Verbose )
+    {
+      printf ("Waveform bytes read from scope: %d.\n", (int) retCount);
+    }
+  }
+  return (int) retCount;
+}
+
+void Scope::InitScope()
+{
+  /*
+    Initialize the scope.
+  */
+
+
+  int ScopeRecLen;
+  char buf[SLEN];
+
+  TekCmd ("*CLS");				// clear some registers...
+  TekQry ("ALLEV?", MyString);			// remove all events
+  TekCmd ("ACQ:STATE OFF");			// acquire state set to OFF
+
+  TekCmd ("HEAD ON");
+  TekQry ("*IDN?", MyString);			// get the scope ID
+  printf ("%s\n", MyString);
+  TekCmd ("HEAD OFF");
+
+  if ( Parameters.lock )
+  {
+    TekCmd ("LOC All");				// lock out front panel control
+  }
+
+  if (Parameters.opt_N[0] || !Parameters.keep) TekCmd (Parameters.disp_wave[0]);		// display channel 1
+  if (Parameters.opt_N[1] || !Parameters.keep) TekCmd (Parameters.disp_wave[1]);		// display channel 2
+  if (Parameters.opt_N[2] || !Parameters.keep) TekCmd (Parameters.disp_wave[2]);		// display channel 3
+  if (Parameters.opt_N[3] || !Parameters.keep) TekCmd (Parameters.disp_wave[3]);		// display channel 4
+
+  if (Parameters.opt_1 || !Parameters.keep) TekCmd (Parameters.vscal[0]);		// vertical scale channel 1
+  if (Parameters.opt_2 || !Parameters.keep) TekCmd (Parameters.vscal[1]);		// vertical scale channel 2
+  if (Parameters.opt_3 || !Parameters.keep) TekCmd (Parameters.vscal[2]);		// vertical scale channel 3
+  if (Parameters.opt_4 || !Parameters.keep) TekCmd (Parameters.vscal[3]);		// vertical scale channel 4
+
+  if (Parameters.opt_5 || !Parameters.keep) TekCmd (Parameters.imped[0]);		// impedance channel 1
+  if (Parameters.opt_6 || !Parameters.keep) TekCmd (Parameters.imped[1]);		// impedance channel 2
+  if (Parameters.opt_7 || !Parameters.keep) TekCmd (Parameters.imped[2]);		// impedance channel 3
+  if (Parameters.opt_8 || !Parameters.keep) TekCmd (Parameters.imped[3]);		// impedance channel 4
+
+  TekCmd ("CH1:BAN FUL");				// bandwidth channel 1
+  TekCmd ("CH2:BAN FUL");				// bandwidth channel 2
+  TekCmd ("CH3:BAN FUL");				// bandwidth channel 3
+  TekCmd ("CH4:BAN FUL");				// bandwidth channel 4
+
+  if (Parameters.opt_P || !Parameters.keep) TekCmd (Parameters.coupl[0]);		// coupling channel 1
+  if (Parameters.opt_Q || !Parameters.keep) TekCmd (Parameters.coupl[1]);		// coupling channel 2
+  if (Parameters.opt_R || !Parameters.keep) TekCmd (Parameters.coupl[2]);		// coupling channel 3
+  if (Parameters.opt_S || !Parameters.keep) TekCmd (Parameters.coupl[3]);		// coupling channel 4
+
+  if (Parameters.opt_A || !Parameters.keep) TekCmd (Parameters.pos[0]);			// position channel 1
+  if (Parameters.opt_B || !Parameters.keep) TekCmd (Parameters.pos[1]);			// position channel 2
+  if (Parameters.opt_C || !Parameters.keep) TekCmd (Parameters.pos[2]);			// position channel 3
+  if (Parameters.opt_D || !Parameters.keep) TekCmd (Parameters.pos[3]);			// position channel 4
+
+#if defined DPO4104B || defined MDO3054
+  TekCmd ("HOR:DEL:MODE OFF");				// horizontal delay mode off
+#elif defined TDS3054B
+  TekCmd ("HOR:DEL:STATE OFF");				// horizontal delay mode off
+#endif
+  if (Parameters.opt_p || !Parameters.keep) TekCmd (Parameters.htrpos);			// horizontal trigger position
+
+  if (Parameters.opt_b || !Parameters.keep) TekCmd (Parameters.hsamp);			// sample rate
+
+  if (Parameters.opt_l || !Parameters.keep) {
+    sprintf (buf, "HOR:RECORDLENGTH %d", Parameters.RecLen);	// recordlength
+    TekCmd (buf);
+    TekCmd ("HEAD OFF");				// no header for the following query
+    TekQry ("HORIZONTAL:RECORDLENGTH?", MyString);
+    ScopeRecLen = atoi (MyString);			// actual waveform recordlenth recorded by scope
+    if ( ScopeRecLen != Parameters.RecLen ) {
+      printf ("Warning!  Requested waveform recordlength %d, ", Parameters.RecLen);
+      printf ("but scope is recording recordlength %d.\n", ScopeRecLen);
+    }
+    if ( ScopeRecLen == 0 ) {
+      ShutDown ();
+    }
+    TekCmd ("DATA:START 1");
+    sprintf (buf, "DAT:STOP %d", ScopeRecLen);	// set the number of waveform points to transfer
+    TekCmd (buf);
+  }
+
+  // if 'Parameters.keep' flag is set, need to make sure DATA:START and DAT:STOP are set to transfer the 
+  // full waveform (already done above if 'opt_l' flag is set)
+  if (!Parameters.opt_l && Parameters.keep) {
+    TekQry ("HORIZONTAL:RECORDLENGTH?", MyString);
+    ScopeRecLen = atoi (MyString);			// actual waveform recordlenth recorded by scope
+    TekCmd ("DATA:START 1");
+    sprintf (buf, "DAT:STOP %d", ScopeRecLen);		// set the number of waveform points to transfer
+    TekCmd (buf);
+  }
+
+  TekCmd ("VERB ON");				// verbose mode
+#if defined DPO4104B || defined MDO3054
+  TekCmd ("DIS:XY OFF");			// display voltage vs time (YT)
+#elif defined TDS3054B
+  TekCmd ("DIS:XY:MODE OFF");			// display voltage vs time (YT)
+#endif
+  TekCmd ("DIS:PERS AUTO");			// display persistence time
+
+  if (Parameters.opt_c || !Parameters.keep) TekCmd (Parameters.trsrc);		// trigger source
+
+#if defined DPO4104B || defined MDO3054
+  strcpy (trlevlcmd, "TRIG:A:LEV:");
+  if ( strstr(Parameters.trsrc,"CH1") ) {
+    strcat (trlevlcmd, "CH1 ");
+  } else if ( strstr(Parameters.trsrc,"CH2") ) {
+    strcat (trlevlcmd, "CH2 ");
+  } else if ( strstr(Parameters.trsrc,"CH3") ) {
+    strcat (trlevlcmd, "CH3 ");
+  } else if ( strstr(Parameters.trsrc,"CH4") ) {
+    strcat (trlevlcmd, "CH4 ");
+#if defined DPO4104B
+  } else if ( strstr(Parameters.trsrc,"AUX") ) {
+    strcat (Parameters.trlevlcmd, "AUX ");
+#endif
+  }
+#elif defined TDS3054B
+  strcpy (trlevlcmd, "TRIG:A:LEV ");
+#endif
+  strcat (trlevlcmd, Parameters.trlevl);
+  if (Parameters.opt_t || !Parameters.keep) TekCmd (trlevlcmd);	// trigger level
+
+  if (Parameters.opt_s || !Parameters.keep) TekCmd (Parameters.trslop);		// trigger slope
+  TekCmd ("TRIG:A:MOD NORM");			// trigger normal mode
+
+  if (Parameters.opt_X) {
+
+    TekCmd ("TRIG:A:TYPE LOGIC");
+    TekCmd ("TRIG:A:LOGI:CLASS LOGIC");
+    TekCmd ("TRIG:A:LOGI:PAT:WHE TRUE");
+
+    if (Parameters.logicAND) {
+      TekCmd ("TRIG:A:LOGI:FUNC AND");
+    } else if (Parameters.logicOR) {
+      TekCmd ("TRIG:A:LOGI:FUNC OR");
+    }
+
+    if (Parameters.logicCH1) {
+      if (Parameters.logicLO) {
+        TekCmd ("TRIG:A:LOGI:INP:CH1 LOW");
+      } else if (Parameters.logicHI) {
+        TekCmd ("TRIG:A:LOGI:INP:CH1 HIGH");
+      }
+      strcpy (logilevlcmd, "TRIG:A:LOGI:THR:CH1 ");
+      strcat (logilevlcmd, Parameters.trlevl);
+      TekCmd (logilevlcmd);
+    } else {
+      TekCmd ("TRIG:A:LOGI:INP:CH1 X");
+    }
+
+    if (Parameters.logicCH2) {
+      if (Parameters.logicLO) {
+        TekCmd ("TRIG:A:LOGI:INP:CH2 LOW");
+      } else if (Parameters.logicHI) {
+        TekCmd ("TRIG:A:LOGI:INP:CH2 HIGH");
+      }
+      strcpy (logilevlcmd, "TRIG:A:LOGI:THR:CH2 ");
+      strcat (logilevlcmd, Parameters.trlevl);
+      TekCmd (logilevlcmd);
+    } else {
+      TekCmd ("TRIG:A:LOGI:INP:CH2 X");
+    }
+
+    if (Parameters.logicCH3) {
+      if (Parameters.logicLO) {
+        TekCmd ("TRIG:A:LOGI:INP:CH3 LOW");
+      } else if (Parameters.logicHI) {
+        TekCmd ("TRIG:A:LOGI:INP:CH3 HIGH");
+      }
+      strcpy (logilevlcmd, "TRIG:A:LOGI:THR:CH3 ");
+      strcat (logilevlcmd, Parameters.trlevl);
+      TekCmd (logilevlcmd);
+    } else {
+      TekCmd ("TRIG:A:LOGI:INP:CH3 X");
+    }
+
+    if (Parameters.logicCH4) {
+      if (Parameters.logicLO) {
+        TekCmd ("TRIG:A:LOGI:INP:CH4 LOW");
+      } else if (Parameters.logicHI) {
+        TekCmd ("TRIG:A:LOGI:INP:CH4 HIGH");
+      }
+      strcpy (logilevlcmd, "TRIG:A:LOGI:THR:CH4 ");
+      strcat (logilevlcmd, Parameters.trlevl);
+      TekCmd (logilevlcmd);
+    } else {
+      TekCmd ("TRIG:A:LOGI:INP:CH4 X");
+    }
+  }	// end opt_X
+
+  if (Parameters.opt_a || !Parameters.keep) {
+    if ( Parameters.average <= 0 )
+    {
+      TekCmd ("ACQ:MOD SAM");			// acquisition mode sample
+    } 
+    else
+    {
+      sprintf (buf, "ACQ:NUMAV %d", Parameters.average);	// set the number of events to average
+      TekCmd (buf);
+      TekCmd ("ACQ:MOD AVE");			// acquisition mode average 
+    }
+  }
+
+  TekCmd ("ACQ:STATE OFF");			// acquire state set to OFF
+
+  TekCmd ("MEASU:IMM:TYPE AMP");		// amplitude measurement
+
+  if ( Parameters.get_wave[0] || Parameters.get_wave[1] || Parameters.get_wave[2] || Parameters.get_wave[3] )
+  {
+    TekCmd ("DAT:ENC RPB");			// RPBinary data format
+#if defined DPO4104B || defined MDO3054
+    TekCmd ("WFMO:BYT_N 1");			// one byte per datum
+#elif defined TDS3054B
+    TekCmd ("DAT:WID 1");			// one byte per datum
+#endif
+  }
+
+  if ( Parameters.TEK_Verbose )
+  {
+    printf ("Finished initializing Tektronix TDS7404B scope...\n");
+  }
+  return;
+}
+
+
+int Scope::AcquireData()
+{
+  /*
+    Note that the AcquireData() routine adds a significant time overhead.
+  */
+
+  TekCmd ("HEAD OFF");
+
+  TekCmd ("MEASU:IMMED:SOURCE CH1");
+  TekQry ("MEASU:IMMED:VAL?", MyString);
+  Parameters.CH1 = atof (MyString);
+  if (Parameters.CH1 > 100) Parameters.CH1 = 0;
+
+  TekCmd ("MEASU:IMMED:SOURCE CH2");
+  TekQry ("MEASU:IMMED:VAL?", MyString);
+  Parameters.CH2 = atof (MyString);
+  if (Parameters.CH2 > 100) Parameters.CH2 = 0;
+
+  TekCmd ("MEASU:IMMED:SOURCE CH3");
+  TekQry ("MEASU:IMMED:VAL?", MyString);
+  Parameters.CH3 = atof (MyString);
+  if (Parameters.CH3 > 100) Parameters.CH3 = 0;
+
+  TekCmd ("MEASU:IMMED:SOURCE CH4");
+  TekQry ("MEASU:IMMED:VAL?", MyString);
+  Parameters.CH4 = atof (MyString);
+  if (Parameters.CH4 > 100) Parameters.CH4 = 0;
+
+  TekCmd ("HEAD ON");
+
+  return 0;
+}
+
+void Scope::AcquireWaves()
+{
+  /*
+    The data in units of YUN is (d-YOF)*YMU + YZE, where d is a value returned by "CURV?".
+    The sample rate is given by XIN.
+  */
+
+  int i, j, rc;
+  int event;
+  char buf[SLEN];
+  char chan[2];
+  time_t t0, tdur;
+
+  TekCmd ("ACQ:STOPA SEQ");			        // acquire mode single sequence
+
+  /*
+    The first trigger is used just to get waveform header information; the 
+    first waveform IS NOT LOGGED.
+  */
+
+  TekCmd ("HEADER ON");
+  TekCmd ("VERB ON");
+  TekCmd ("ACQ:STATE ON");			        // turn on acquisition
+
+  tdur = time (NULL);					// initialize run timer
+  t0 = time (NULL);				        // initialize aq_timeout timer
+  while ( 1 ) {
+    if ( Parameters.aq_timeout >= 0 ) {			        // acquistion timeout must have been set...
+      if ( time (NULL) - t0 >= Parameters.aq_timeout ) {
+        printf ("Acquisition Timeout!\n");
+        ShutDown ();
+      }
+    }
+
+    if ( Parameters.duration >= 0 ) {
+      if ( time (NULL) - tdur >= Parameters.duration ) break;	// break out of loop and quit
+    }
+
+    TekQry ("ACQ:STATE?", MyString);
+    rc = strncmp (MyString, ":ACQUIRE:STATE 1", 16);
+    if ( rc ) break;
+    usleep (1000);
+  }
+
+  for (i=0; i<4; i++) {                               	// loop over channels
+    strcpy (buf, "DAT:SOU CH");
+    if (Parameters.get_wave[i])
+    {
+      sprintf (chan, "%d", i+1); 
+      strcat (buf, chan);
+    }
+    else
+    {
+      continue;
+    }
+    TekCmd (buf);			                // data source
+
+    Parameters.got_wave[i] = 0;					// waveforms are all lumped together...
+    for (j=0; j<NTRIES; j++)
+    {
+#if defined DPO4104B || defined MDO3054
+      ByteCount[0] = WavQry ("WFMOutpre?", Curve[0]);	// need to know how many bytes to write out...
+#elif defined TDS3054B
+      ByteCount[0] = WavQry ("WFMPRE?", Curve[0]);	// need to know how many bytes to write out...
+#endif
+      //cout<<Curve[0]<<endl;
+      TekQry ("*ESR?", MyString);			// are we done yet??? (no time overhead...)
+      rc = atoi (MyString);
+      if ( rc == 0 )					// might need more exception handling here...
+      {
+        Parameters.got_wave[i] = 1;
+        break;
+      }
+    }
+    if ( ! Parameters.got_wave[i] )
+    {
+      printf ("\nWarning! Couldn't read header channel %d\n", i+1);
+      rewrite = 1;
+    }
+    else
+    {
+      //LogIt (fp, -1);	
+      fMan.parseHeader(Curve[0]);				// log the waveform headers
+    }
+  }
+
+  /* Start loop over triggers for waveforms to be logged */
+
+  event = 0;						// initialize event counter
+
+  TekCmd ("HEADER ON");					// this turns on the ":CURVE" header
+  TekCmd ("VERB ON");					// ":CURVE" rather than ":CURV"...
+
+  while ( 1 )
+  {
+    if ( event == Parameters.nevent )  {
+      break;						// break out of loop and quit
+    }
+
+    if ( Parameters.duration >= 0 ) {
+      if ( time (NULL) - tdur >= Parameters.duration ) break;	// break out of loop and quit
+    }
+
+    TekCmd ("ACQ:STATE ON");			        // turn on acquisition
+
+    t0 = time (NULL);				        // initialize aq_timeout timer
+    while ( 1 ) {
+      if ( Parameters.aq_timeout >= 0 ) {			        // acquistion timeout must have been set...
+        if ( time (NULL) - t0 >= Parameters.aq_timeout ) {
+          printf ("Acquisition Timeout!\n");
+          ShutDown ();
+        }
+      }
+      TekQry ("ACQ:STATE?", MyString);
+      rc = strncmp (MyString, ":ACQUIRE:STATE 1", 16);
+      if ( rc ) break;
+      usleep (1000);
+    }
+
+    if (Parameters.measureData) {
+      AcquireData ();		        		// get the amplitude data
+      if ( Parameters.CH1<Parameters.MinAmp[0] || Parameters.CH2<Parameters.MinAmp[1] ||
+           Parameters.CH3<Parameters.MinAmp[2] || Parameters.CH4<Parameters.MinAmp[3] ) continue;	// exclude small signals
+    }
+
+    if ( event%Parameters.prescale ) {
+      event++;
+      continue;						// don't log the prescaled trigger
+    }
+
+    for (i=0; i<4; i++) {                               // loop over channels
+      strcpy (buf, "DAT:SOU CH");
+      if (Parameters.get_wave[i])
+      {
+        sprintf (chan, "%d", i+1); 
+        strcat (buf, chan);
+      }
+      else
+      {
+        continue;
+      }
+      TekCmd (buf);			                // data source
+
+      Parameters.got_wave[i] = 0;					// waveforms are all lumped together...
+      for (j=0; j<NTRIES; j++)
+      {
+        ByteCount[i] = WavQry ("CURVE?", Curve[i]);	// need to know how many bytes to write out...
+	TekQry ("*ESR?", MyString);			// are we done yet??? (no time overhead...)
+        rc = atoi (MyString);
+        if ( rc == 0 )					// might need more exception handling here...
+        {
+          Parameters.got_wave[i] = 1;
+  	  break;
+        }
+      }
+      if ( ! Parameters.got_wave[i] )
+      {
+        printf ("\nWarning! Couldn't read waveform channel %d for event %d\n", i+1, event+1);
+        rewrite = 1;
+      }
+    }
+
+    if (Parameters.WriteToFile) {
+      //LogIt (fp, event);
+      fMan.addEvent(Curve, ByteCount);
+    }
+
+    event++;
+
+    if ( ! (event%Parameters.ReportFreq) )
+    {
+      Counter (event);
+    }
+    sleep (Parameters.interval);
+  }
+
+  printf ("\nFinished measuring %d events!\n", event);
+
+  return;
+}
+
+
+void Scope::ShutDown()
+{
+  /*
+    Close the scope session.
+  */
+
+  if ( ! Parameters.TestMode )
+  {
+    CloseScope ();
+  }
+#if IPC==1
+  kill (pid, SIGKILL);                          // kill the child
+#endif
+  exit (0);
+}
+
+void Scope::LogIt(FILE *fp, int event)
+{
+  /*
+    Log the results in the ouput file.
+  */
+
+  int i, j;
+  static int kilroy=0;
+  time_t TestTime;
+
+  if (Parameters.TEK_Verbose) {
+    if (event<0) {
+      printf ("header event - not logged...\n");
+    } else {
+      printf ("logging event number %d\n", event);
+    }
+  }
+
+  TestTime = time (NULL);
+
+  if ( fp != NULL )				// WriteToFile must be set to 1...
+  {
+
+    if ( event < 0 )				// waveform headers
+    {
+      for ( i=0; i<4; i++ )
+      {
+        if ( Parameters.get_wave[i] && Parameters.got_wave[i] )
+        {
+          for ( j=0; j<ByteCount[i]; j++ )
+          {
+            fputc (Curve[i][j], fp);		// Curve can have imbedded nulls; includes header...
+          }
+        }
+      }
+    }
+    else
+    {
+      fprintf (fp,"%d %li %0.3f %0.3f %0.3f %0.3f\n", event, TestTime, Parameters.CH1, Parameters.CH2, Parameters.CH3, Parameters.CH4);
+      for ( i=0; i<4; i++ )
+      {
+        if ( Parameters.get_wave[i] && Parameters.got_wave[i] )
+        {
+          for ( j=0; j<ByteCount[i]; j++ )
+          {
+            fputc (Curve[i][j], fp);		// Curve can have imbedded nulls; includes header...
+          }
+        }
+      }
+    }
+  }
+  else
+  {
+    if ( ! kilroy )
+    {
+      printf ("Warning!  Data is not being logged.\n");
+      kilroy = 1;
+    }
+  }
+
+  return;
+}
+
+void Scope::Counter(int n)
+{
+  /*
+    Counter; n must be >= 0
+  */
+
+  static int d=0;
+  int i;
+
+  if ( rewrite )
+  {
+    printf ("number of events so far = ");
+    rewrite = 0;
+  }
+
+  for (i=0; i<d; i++)
+  {
+    printf ("\b");
+  }
+
+  d = log10 (n);
+  if ( d < 0 )
+  {
+    d = 1;
+  }
+  else
+  {
+    d = d + 1;
+  }
+
+  printf ("%d",n);
+  fflush (stdout);
+
+  return;
+}
+
