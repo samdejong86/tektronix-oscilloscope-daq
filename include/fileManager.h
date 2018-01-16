@@ -1,8 +1,13 @@
+/*
+ *   A file manager class for the tekdaq program. This class manages writing to a ROOT file.
+ *   This class could be replaced with one that writes in a different file format
+ *
+ */
+
 #include <vector>
 
 #include "TFile.h"
 #include "TTree.h"
-
 
 #include "tekdaq.h"
 #include "ScopeParameters.h"
@@ -16,17 +21,17 @@ class fileManager{
 
  public:
   fileManager(){}
-  fileManager(ScopeParameters *Params){
-    fname=Params->outfile;
+  fileManager(ScopeParameters *Params){  /*pass the scope parameters to the filemanager*/
+    fname=Params->outfile;               /*get the output filename*/
     Parameters = Params;
   }
 
-  void OpenFile();
-  void CloseFile();
-
-  void ParseMetaData(string Header);
-  void addEvent(char Curve[4][CLEN], int ByteCount[4]);
-  void parseHeader(char Header[CLEN], int ByteCount);
+  void OpenFile();                       /*Open the file*/
+  void CloseFile();                      /*Close the file*/
+ 
+  void ParseMetaData(string Header);                    /*Parse meta data for run (scope settings)*/
+  void addEvent(char Curve[4][CLEN], int ByteCount[4]); /*add an event to the file*/
+  void parseHeader(char Header[CLEN], int ByteCount);   /*parse the header containing x&y offsets and scale factors*/
     
 
  private:

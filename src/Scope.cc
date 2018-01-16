@@ -10,6 +10,10 @@ using namespace std;
 #include "tekdaq.h"
 #include "Scope.h"
 
+/*
+ *  The guts of these methods were written by Paul Poffenburger
+ */
+
 
 void Scope::OpenScope()
 {
@@ -732,7 +736,6 @@ void Scope::MakeHeader(){
   }
   BldHead ("MEASU:IMM:TYPE?");
 
-  //fprintf (fp, "%s\n");
   
 
   TekCmd ("HEADER OFF");
@@ -745,8 +748,6 @@ void Scope::BldHead (string qry)
   int i;
   string StrHead=":";
 
-  //strcpy (StrHead, ":");
-  //strncat (StrHead, qry, 3);
   StrHead = StrHead+qry.substr(0,3);
   
 
@@ -754,13 +755,10 @@ void Scope::BldHead (string qry)
   for (i=0; i<NTRIES; i++)
   {
     TekQry (qry, MyString);
-    //if( StrHead.compare(MyString) != 0
     if ( ! strncmp (StrHead.c_str(), MyString, 4) )
     {
       sscanf (MyString, "%[^\n]", MyString);
       Header = Header+MyString+"\t";
-      //strcat (Header, MyString);
-      //strcat (Header, "\t");
       return;
     }
     else
@@ -781,6 +779,10 @@ void Scope::RunComplete(){
   printf ("\nFinished measuring %d events!\n", event);
 
 
+  /*
+   *This sends a notification to the top right of the screen.
+   *The version of libnotify available with SL6 is not compatible.
+   */
 #ifdef NOTIFY
 
   stringstream ss;

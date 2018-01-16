@@ -1,4 +1,7 @@
-
+/*
+ *  This class contains all the scope parameters, as well as code to parse them
+ *  from the command line arguments
+ */
 
 using namespace std;
 
@@ -16,14 +19,14 @@ class ScopeParameters{
 
   ScopeParameters(int argc, char *argv[]);  
 
-  void usage (char *prog);
-  void  Defaults (); 
-  void printVerbose();
+  void usage (char *prog);  //print usage
+  void  Defaults ();        //print defaults
+  void printVerbose();      //print verbose
 
 
 
-
-  //parameters:
+  //Parameters are all public, since I didn't want to write 65 get/set methods...
+  
   int getopt_Verbose;   			// getopt verbose flag
   int quiet; 					// quiet mode
   int keep;				        // use program defaults instead of existing scope settings

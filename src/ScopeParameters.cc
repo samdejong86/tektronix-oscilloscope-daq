@@ -4,7 +4,9 @@ using namespace std;
 
 #include "ScopeParameters.h"
 
-
+/* 
+ * The guts of this class was written by Paul Poffenburger
+ */
 
 
 ScopeParameters::ScopeParameters(int argc, char *argv[]){
@@ -655,6 +657,7 @@ void ScopeParameters::usage (char *prog)
   exit (-1);
 }
 
+//Print out default parameters
  void ScopeParameters::Defaults ()
 {
   printf ("\n\t\t\t\tDefault Scope Settings\n\n");
@@ -680,6 +683,7 @@ void ScopeParameters::usage (char *prog)
   exit (0);
 }
  
+ //print out verbose parameters
  void ScopeParameters::printVerbose(){
    printf ("Output file = \t\t\t%s\n", outfile);
     printf ("Report frequency = \t\t%d\n", ReportFreq);
