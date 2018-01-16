@@ -1,7 +1,3 @@
-#ifdef NOTIFY
-#include <libnotify/notify.h>
-#endif
-
 #include <sstream>
 
 using namespace std;
@@ -794,21 +790,12 @@ void Scope::RunComplete(){
   cd = getenv("PWD");
   string pwd = cd;
 
-  string subMessage = "Finished measuring "+numEvents+" events!";
-  string icon = pwd+"/temp.png";
+  string subMessage = "\"Finished measuring "+numEvents+" events!\"";
+  string icon = pwd+"/icon/tek.png";
 
-
-  notify_init("Sample");
-  NotifyNotification* n = notify_notification_new ("Run Complete", 
-						   subMessage.c_str(),
-						   icon.c_str());
-  notify_notification_set_timeout(n, 10000); // 10 seconds
-  
-  if (!notify_notification_show(n, 0)) 
-    {
-      std::cerr << "show has failed" << std::endl;
-      return ;
-    }
+  string command = "notify-send "+subMessage+" -i "+icon;
+  cout<<command<<endl;
+  system(command.c_str());
 
 #endif
 

@@ -19,7 +19,6 @@ CPPFLAGS += -DDPO4104B
 CPPFLAGS += -lvisa
 
 #CPPFLAGS += -DNOTIFY
-#CPPFLAGS += `pkg-config --cflags --libs libnotify`
 
 
 CFLAGS += -Wall
