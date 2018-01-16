@@ -1,4 +1,8 @@
-	
+#ifdef NOTIFY
+#include <libnotify/notify.h>
+#endif
+
+#include <sstream>
 
 using namespace std;
 
@@ -79,7 +83,7 @@ void Scope::CloseScope()
 
   TekCmd ("LOCK NONE");		// unlock the front panel control
 
-  if ( Parameters.TEK_Verbose )
+  if ( Parameters->TEK_Verbose )
   {
     printf ("Closing down the scope...\n");
   }
@@ -106,7 +110,7 @@ void Scope::TekCmd(string cmd)
     Generic scope command writer.
   */
 
-  if ( Parameters.TEK_Verbose )
+  if ( Parameters->TEK_Verbose )
   {
     cout<<"Command sent to scope: "<<cmd<<endl;
   }
@@ -143,7 +147,7 @@ void Scope::TekQry(string cmd, char rtn[SLEN])
   else
   {
     rtn[retCount] = '\0';
-    if ( Parameters.TEK_Verbose )
+    if ( Parameters->TEK_Verbose )
     {
       sscanf (rtn, "%[^\n]", rtn);
       printf ("Query response read from scope: %s (%d bytes).\n", rtn, (int) retCount);
@@ -171,7 +175,7 @@ int Scope::WavQry(string cmd, char rtn[CLEN])
   }
   else
   {
-    if ( Parameters.TEK_Verbose )
+    if ( Parameters->TEK_Verbose )
     {
       printf ("Waveform bytes read from scope: %d.\n", (int) retCount);
     }
@@ -198,58 +202,58 @@ void Scope::InitScope()
   printf ("%s\n", MyString);
   TekCmd ("HEAD OFF");
 
-  if ( Parameters.lock )
+  if ( Parameters->lock )
   {
     TekCmd ("LOC All");				// lock out front panel control
   }
 
-  if (Parameters.opt_N[0] || !Parameters.keep) TekCmd (Parameters.disp_wave[0]);		// display channel 1
-  if (Parameters.opt_N[1] || !Parameters.keep) TekCmd (Parameters.disp_wave[1]);		// display channel 2
-  if (Parameters.opt_N[2] || !Parameters.keep) TekCmd (Parameters.disp_wave[2]);		// display channel 3
-  if (Parameters.opt_N[3] || !Parameters.keep) TekCmd (Parameters.disp_wave[3]);		// display channel 4
+  if (Parameters->opt_N[0] || !Parameters->keep) TekCmd (Parameters->disp_wave[0]);		// display channel 1
+  if (Parameters->opt_N[1] || !Parameters->keep) TekCmd (Parameters->disp_wave[1]);		// display channel 2
+  if (Parameters->opt_N[2] || !Parameters->keep) TekCmd (Parameters->disp_wave[2]);		// display channel 3
+  if (Parameters->opt_N[3] || !Parameters->keep) TekCmd (Parameters->disp_wave[3]);		// display channel 4
 
-  if (Parameters.opt_1 || !Parameters.keep) TekCmd (Parameters.vscal[0]);		// vertical scale channel 1
-  if (Parameters.opt_2 || !Parameters.keep) TekCmd (Parameters.vscal[1]);		// vertical scale channel 2
-  if (Parameters.opt_3 || !Parameters.keep) TekCmd (Parameters.vscal[2]);		// vertical scale channel 3
-  if (Parameters.opt_4 || !Parameters.keep) TekCmd (Parameters.vscal[3]);		// vertical scale channel 4
+  if (Parameters->opt_1 || !Parameters->keep) TekCmd (Parameters->vscal[0]);		// vertical scale channel 1
+  if (Parameters->opt_2 || !Parameters->keep) TekCmd (Parameters->vscal[1]);		// vertical scale channel 2
+  if (Parameters->opt_3 || !Parameters->keep) TekCmd (Parameters->vscal[2]);		// vertical scale channel 3
+  if (Parameters->opt_4 || !Parameters->keep) TekCmd (Parameters->vscal[3]);		// vertical scale channel 4
 
-  if (Parameters.opt_5 || !Parameters.keep) TekCmd (Parameters.imped[0]);		// impedance channel 1
-  if (Parameters.opt_6 || !Parameters.keep) TekCmd (Parameters.imped[1]);		// impedance channel 2
-  if (Parameters.opt_7 || !Parameters.keep) TekCmd (Parameters.imped[2]);		// impedance channel 3
-  if (Parameters.opt_8 || !Parameters.keep) TekCmd (Parameters.imped[3]);		// impedance channel 4
+  if (Parameters->opt_5 || !Parameters->keep) TekCmd (Parameters->imped[0]);		// impedance channel 1
+  if (Parameters->opt_6 || !Parameters->keep) TekCmd (Parameters->imped[1]);		// impedance channel 2
+  if (Parameters->opt_7 || !Parameters->keep) TekCmd (Parameters->imped[2]);		// impedance channel 3
+  if (Parameters->opt_8 || !Parameters->keep) TekCmd (Parameters->imped[3]);		// impedance channel 4
 
   TekCmd ("CH1:BAN FUL");				// bandwidth channel 1
   TekCmd ("CH2:BAN FUL");				// bandwidth channel 2
   TekCmd ("CH3:BAN FUL");				// bandwidth channel 3
   TekCmd ("CH4:BAN FUL");				// bandwidth channel 4
 
-  if (Parameters.opt_P || !Parameters.keep) TekCmd (Parameters.coupl[0]);		// coupling channel 1
-  if (Parameters.opt_Q || !Parameters.keep) TekCmd (Parameters.coupl[1]);		// coupling channel 2
-  if (Parameters.opt_R || !Parameters.keep) TekCmd (Parameters.coupl[2]);		// coupling channel 3
-  if (Parameters.opt_S || !Parameters.keep) TekCmd (Parameters.coupl[3]);		// coupling channel 4
+  if (Parameters->opt_P || !Parameters->keep) TekCmd (Parameters->coupl[0]);		// coupling channel 1
+  if (Parameters->opt_Q || !Parameters->keep) TekCmd (Parameters->coupl[1]);		// coupling channel 2
+  if (Parameters->opt_R || !Parameters->keep) TekCmd (Parameters->coupl[2]);		// coupling channel 3
+  if (Parameters->opt_S || !Parameters->keep) TekCmd (Parameters->coupl[3]);		// coupling channel 4
 
-  if (Parameters.opt_A || !Parameters.keep) TekCmd (Parameters.pos[0]);			// position channel 1
-  if (Parameters.opt_B || !Parameters.keep) TekCmd (Parameters.pos[1]);			// position channel 2
-  if (Parameters.opt_C || !Parameters.keep) TekCmd (Parameters.pos[2]);			// position channel 3
-  if (Parameters.opt_D || !Parameters.keep) TekCmd (Parameters.pos[3]);			// position channel 4
+  if (Parameters->opt_A || !Parameters->keep) TekCmd (Parameters->pos[0]);			// position channel 1
+  if (Parameters->opt_B || !Parameters->keep) TekCmd (Parameters->pos[1]);			// position channel 2
+  if (Parameters->opt_C || !Parameters->keep) TekCmd (Parameters->pos[2]);			// position channel 3
+  if (Parameters->opt_D || !Parameters->keep) TekCmd (Parameters->pos[3]);			// position channel 4
 
 #if defined DPO4104B || defined MDO3054
   TekCmd ("HOR:DEL:MODE OFF");				// horizontal delay mode off
 #elif defined TDS3054B
   TekCmd ("HOR:DEL:STATE OFF");				// horizontal delay mode off
 #endif
-  if (Parameters.opt_p || !Parameters.keep) TekCmd (Parameters.htrpos);			// horizontal trigger position
+  if (Parameters->opt_p || !Parameters->keep) TekCmd (Parameters->htrpos);			// horizontal trigger position
 
-  if (Parameters.opt_b || !Parameters.keep) TekCmd (Parameters.hsamp);			// sample rate
+  if (Parameters->opt_b || !Parameters->keep) TekCmd (Parameters->hsamp);			// sample rate
 
-  if (Parameters.opt_l || !Parameters.keep) {
-    sprintf (buf, "HOR:RECORDLENGTH %d", Parameters.RecLen);	// recordlength
+  if (Parameters->opt_l || !Parameters->keep) {
+    sprintf (buf, "HOR:RECORDLENGTH %d", Parameters->RecLen);	// recordlength
     TekCmd (buf);
     TekCmd ("HEAD OFF");				// no header for the following query
     TekQry ("HORIZONTAL:RECORDLENGTH?", MyString);
     ScopeRecLen = atoi (MyString);			// actual waveform recordlenth recorded by scope
-    if ( ScopeRecLen != Parameters.RecLen ) {
-      printf ("Warning!  Requested waveform recordlength %d, ", Parameters.RecLen);
+    if ( ScopeRecLen != Parameters->RecLen ) {
+      printf ("Warning!  Requested waveform recordlength %d, ", Parameters->RecLen);
       printf ("but scope is recording recordlength %d.\n", ScopeRecLen);
     }
     if ( ScopeRecLen == 0 ) {
@@ -260,9 +264,9 @@ void Scope::InitScope()
     TekCmd (buf);
   }
 
-  // if 'Parameters.keep' flag is set, need to make sure DATA:START and DAT:STOP are set to transfer the 
+  // if 'Parameters->keep' flag is set, need to make sure DATA:START and DAT:STOP are set to transfer the 
   // full waveform (already done above if 'opt_l' flag is set)
-  if (!Parameters.opt_l && Parameters.keep) {
+  if (!Parameters->opt_l && Parameters->keep) {
     TekQry ("HORIZONTAL:RECORDLENGTH?", MyString);
     ScopeRecLen = atoi (MyString);			// actual waveform recordlenth recorded by scope
     TekCmd ("DATA:START 1");
@@ -278,105 +282,105 @@ void Scope::InitScope()
 #endif
   TekCmd ("DIS:PERS AUTO");			// display persistence time
 
-  if (Parameters.opt_c || !Parameters.keep) TekCmd (Parameters.trsrc);		// trigger source
+  if (Parameters->opt_c || !Parameters->keep) TekCmd (Parameters->trsrc);		// trigger source
 
 #if defined DPO4104B || defined MDO3054
   strcpy (trlevlcmd, "TRIG:A:LEV:");
-  if ( strstr(Parameters.trsrc,"CH1") ) {
+  if ( strstr(Parameters->trsrc,"CH1") ) {
     strcat (trlevlcmd, "CH1 ");
-  } else if ( strstr(Parameters.trsrc,"CH2") ) {
+  } else if ( strstr(Parameters->trsrc,"CH2") ) {
     strcat (trlevlcmd, "CH2 ");
-  } else if ( strstr(Parameters.trsrc,"CH3") ) {
+  } else if ( strstr(Parameters->trsrc,"CH3") ) {
     strcat (trlevlcmd, "CH3 ");
-  } else if ( strstr(Parameters.trsrc,"CH4") ) {
+  } else if ( strstr(Parameters->trsrc,"CH4") ) {
     strcat (trlevlcmd, "CH4 ");
 #if defined DPO4104B
-  } else if ( strstr(Parameters.trsrc,"AUX") ) {
-    strcat (Parameters.trlevlcmd, "AUX ");
+  } else if ( strstr(Parameters->trsrc,"AUX") ) {
+    strcat (Parameters->trlevlcmd, "AUX ");
 #endif
   }
 #elif defined TDS3054B
   strcpy (trlevlcmd, "TRIG:A:LEV ");
 #endif
-  strcat (trlevlcmd, Parameters.trlevl);
-  if (Parameters.opt_t || !Parameters.keep) TekCmd (trlevlcmd);	// trigger level
+  strcat (trlevlcmd, Parameters->trlevl);
+  if (Parameters->opt_t || !Parameters->keep) TekCmd (trlevlcmd);	// trigger level
 
-  if (Parameters.opt_s || !Parameters.keep) TekCmd (Parameters.trslop);		// trigger slope
+  if (Parameters->opt_s || !Parameters->keep) TekCmd (Parameters->trslop);		// trigger slope
   TekCmd ("TRIG:A:MOD NORM");			// trigger normal mode
 
-  if (Parameters.opt_X) {
+  if (Parameters->opt_X) {
 
     TekCmd ("TRIG:A:TYPE LOGIC");
     TekCmd ("TRIG:A:LOGI:CLASS LOGIC");
     TekCmd ("TRIG:A:LOGI:PAT:WHE TRUE");
 
-    if (Parameters.logicAND) {
+    if (Parameters->logicAND) {
       TekCmd ("TRIG:A:LOGI:FUNC AND");
-    } else if (Parameters.logicOR) {
+    } else if (Parameters->logicOR) {
       TekCmd ("TRIG:A:LOGI:FUNC OR");
     }
 
-    if (Parameters.logicCH1) {
-      if (Parameters.logicLO) {
+    if (Parameters->logicCH1) {
+      if (Parameters->logicLO) {
         TekCmd ("TRIG:A:LOGI:INP:CH1 LOW");
-      } else if (Parameters.logicHI) {
+      } else if (Parameters->logicHI) {
         TekCmd ("TRIG:A:LOGI:INP:CH1 HIGH");
       }
       strcpy (logilevlcmd, "TRIG:A:LOGI:THR:CH1 ");
-      strcat (logilevlcmd, Parameters.trlevl);
+      strcat (logilevlcmd, Parameters->trlevl);
       TekCmd (logilevlcmd);
     } else {
       TekCmd ("TRIG:A:LOGI:INP:CH1 X");
     }
 
-    if (Parameters.logicCH2) {
-      if (Parameters.logicLO) {
+    if (Parameters->logicCH2) {
+      if (Parameters->logicLO) {
         TekCmd ("TRIG:A:LOGI:INP:CH2 LOW");
-      } else if (Parameters.logicHI) {
+      } else if (Parameters->logicHI) {
         TekCmd ("TRIG:A:LOGI:INP:CH2 HIGH");
       }
       strcpy (logilevlcmd, "TRIG:A:LOGI:THR:CH2 ");
-      strcat (logilevlcmd, Parameters.trlevl);
+      strcat (logilevlcmd, Parameters->trlevl);
       TekCmd (logilevlcmd);
     } else {
       TekCmd ("TRIG:A:LOGI:INP:CH2 X");
     }
 
-    if (Parameters.logicCH3) {
-      if (Parameters.logicLO) {
+    if (Parameters->logicCH3) {
+      if (Parameters->logicLO) {
         TekCmd ("TRIG:A:LOGI:INP:CH3 LOW");
-      } else if (Parameters.logicHI) {
+      } else if (Parameters->logicHI) {
         TekCmd ("TRIG:A:LOGI:INP:CH3 HIGH");
       }
       strcpy (logilevlcmd, "TRIG:A:LOGI:THR:CH3 ");
-      strcat (logilevlcmd, Parameters.trlevl);
+      strcat (logilevlcmd, Parameters->trlevl);
       TekCmd (logilevlcmd);
     } else {
       TekCmd ("TRIG:A:LOGI:INP:CH3 X");
     }
 
-    if (Parameters.logicCH4) {
-      if (Parameters.logicLO) {
+    if (Parameters->logicCH4) {
+      if (Parameters->logicLO) {
         TekCmd ("TRIG:A:LOGI:INP:CH4 LOW");
-      } else if (Parameters.logicHI) {
+      } else if (Parameters->logicHI) {
         TekCmd ("TRIG:A:LOGI:INP:CH4 HIGH");
       }
       strcpy (logilevlcmd, "TRIG:A:LOGI:THR:CH4 ");
-      strcat (logilevlcmd, Parameters.trlevl);
+      strcat (logilevlcmd, Parameters->trlevl);
       TekCmd (logilevlcmd);
     } else {
       TekCmd ("TRIG:A:LOGI:INP:CH4 X");
     }
   }	// end opt_X
 
-  if (Parameters.opt_a || !Parameters.keep) {
-    if ( Parameters.average <= 0 )
+  if (Parameters->opt_a || !Parameters->keep) {
+    if ( Parameters->average <= 0 )
     {
       TekCmd ("ACQ:MOD SAM");			// acquisition mode sample
     } 
     else
     {
-      sprintf (buf, "ACQ:NUMAV %d", Parameters.average);	// set the number of events to average
+      sprintf (buf, "ACQ:NUMAV %d", Parameters->average);	// set the number of events to average
       TekCmd (buf);
       TekCmd ("ACQ:MOD AVE");			// acquisition mode average 
     }
@@ -386,7 +390,7 @@ void Scope::InitScope()
 
   TekCmd ("MEASU:IMM:TYPE AMP");		// amplitude measurement
 
-  if ( Parameters.get_wave[0] || Parameters.get_wave[1] || Parameters.get_wave[2] || Parameters.get_wave[3] )
+  if ( Parameters->get_wave[0] || Parameters->get_wave[1] || Parameters->get_wave[2] || Parameters->get_wave[3] )
   {
     TekCmd ("DAT:ENC RPB");			// RPBinary data format
 #if defined DPO4104B || defined MDO3054
@@ -396,10 +400,17 @@ void Scope::InitScope()
 #endif
   }
 
-  if ( Parameters.TEK_Verbose )
+  if ( Parameters->TEK_Verbose )
   {
     printf ("Finished initializing Tektronix TDS7404B scope...\n");
   }
+  
+
+
+  MakeHeader();
+  fMan.ParseMetaData(Header);
+
+
   return;
 }
 
@@ -414,23 +425,23 @@ int Scope::AcquireData()
 
   TekCmd ("MEASU:IMMED:SOURCE CH1");
   TekQry ("MEASU:IMMED:VAL?", MyString);
-  Parameters.CH1 = atof (MyString);
-  if (Parameters.CH1 > 100) Parameters.CH1 = 0;
+  Parameters->CH1 = atof (MyString);
+  if (Parameters->CH1 > 100) Parameters->CH1 = 0;
 
   TekCmd ("MEASU:IMMED:SOURCE CH2");
   TekQry ("MEASU:IMMED:VAL?", MyString);
-  Parameters.CH2 = atof (MyString);
-  if (Parameters.CH2 > 100) Parameters.CH2 = 0;
+  Parameters->CH2 = atof (MyString);
+  if (Parameters->CH2 > 100) Parameters->CH2 = 0;
 
   TekCmd ("MEASU:IMMED:SOURCE CH3");
   TekQry ("MEASU:IMMED:VAL?", MyString);
-  Parameters.CH3 = atof (MyString);
-  if (Parameters.CH3 > 100) Parameters.CH3 = 0;
+  Parameters->CH3 = atof (MyString);
+  if (Parameters->CH3 > 100) Parameters->CH3 = 0;
 
   TekCmd ("MEASU:IMMED:SOURCE CH4");
   TekQry ("MEASU:IMMED:VAL?", MyString);
-  Parameters.CH4 = atof (MyString);
-  if (Parameters.CH4 > 100) Parameters.CH4 = 0;
+  Parameters->CH4 = atof (MyString);
+  if (Parameters->CH4 > 100) Parameters->CH4 = 0;
 
   TekCmd ("HEAD ON");
 
@@ -445,7 +456,6 @@ void Scope::AcquireWaves()
   */
 
   int i, j, rc;
-  int event;
   char buf[SLEN];
   char chan[2];
   time_t t0, tdur;
@@ -464,15 +474,15 @@ void Scope::AcquireWaves()
   tdur = time (NULL);					// initialize run timer
   t0 = time (NULL);				        // initialize aq_timeout timer
   while ( 1 ) {
-    if ( Parameters.aq_timeout >= 0 ) {			        // acquistion timeout must have been set...
-      if ( time (NULL) - t0 >= Parameters.aq_timeout ) {
+    if ( Parameters->aq_timeout >= 0 ) {			        // acquistion timeout must have been set...
+      if ( time (NULL) - t0 >= Parameters->aq_timeout ) {
         printf ("Acquisition Timeout!\n");
         ShutDown ();
       }
     }
 
-    if ( Parameters.duration >= 0 ) {
-      if ( time (NULL) - tdur >= Parameters.duration ) break;	// break out of loop and quit
+    if ( Parameters->duration >= 0 ) {
+      if ( time (NULL) - tdur >= Parameters->duration ) break;	// break out of loop and quit
     }
 
     TekQry ("ACQ:STATE?", MyString);
@@ -483,7 +493,7 @@ void Scope::AcquireWaves()
 
   for (i=0; i<4; i++) {                               	// loop over channels
     strcpy (buf, "DAT:SOU CH");
-    if (Parameters.get_wave[i])
+    if (Parameters->get_wave[i])
     {
       sprintf (chan, "%d", i+1); 
       strcat (buf, chan);
@@ -494,7 +504,7 @@ void Scope::AcquireWaves()
     }
     TekCmd (buf);			                // data source
 
-    Parameters.got_wave[i] = 0;					// waveforms are all lumped together...
+    Parameters->got_wave[i] = 0;					// waveforms are all lumped together...
     for (j=0; j<NTRIES; j++)
     {
 #if defined DPO4104B || defined MDO3054
@@ -507,11 +517,11 @@ void Scope::AcquireWaves()
       rc = atoi (MyString);
       if ( rc == 0 )					// might need more exception handling here...
       {
-        Parameters.got_wave[i] = 1;
+        Parameters->got_wave[i] = 1;
         break;
       }
     }
-    if ( ! Parameters.got_wave[i] )
+    if ( ! Parameters->got_wave[i] )
     {
       printf ("\nWarning! Couldn't read header channel %d\n", i+1);
       rewrite = 1;
@@ -519,7 +529,7 @@ void Scope::AcquireWaves()
     else
     {
       //LogIt (fp, -1);	
-      fMan.parseHeader(Curve[0]);				// log the waveform headers
+      fMan.parseHeader(Curve[0],ByteCount[0]);				// log the waveform headers
     }
   }
 
@@ -532,20 +542,20 @@ void Scope::AcquireWaves()
 
   while ( 1 )
   {
-    if ( event == Parameters.nevent )  {
+    if ( event == Parameters->nevent )  {
       break;						// break out of loop and quit
     }
 
-    if ( Parameters.duration >= 0 ) {
-      if ( time (NULL) - tdur >= Parameters.duration ) break;	// break out of loop and quit
+    if ( Parameters->duration >= 0 ) {
+      if ( time (NULL) - tdur >= Parameters->duration ) break;	// break out of loop and quit
     }
 
     TekCmd ("ACQ:STATE ON");			        // turn on acquisition
 
     t0 = time (NULL);				        // initialize aq_timeout timer
     while ( 1 ) {
-      if ( Parameters.aq_timeout >= 0 ) {			        // acquistion timeout must have been set...
-        if ( time (NULL) - t0 >= Parameters.aq_timeout ) {
+      if ( Parameters->aq_timeout >= 0 ) {			        // acquistion timeout must have been set...
+        if ( time (NULL) - t0 >= Parameters->aq_timeout ) {
           printf ("Acquisition Timeout!\n");
           ShutDown ();
         }
@@ -556,20 +566,20 @@ void Scope::AcquireWaves()
       usleep (1000);
     }
 
-    if (Parameters.measureData) {
+    if (Parameters->measureData) {
       AcquireData ();		        		// get the amplitude data
-      if ( Parameters.CH1<Parameters.MinAmp[0] || Parameters.CH2<Parameters.MinAmp[1] ||
-           Parameters.CH3<Parameters.MinAmp[2] || Parameters.CH4<Parameters.MinAmp[3] ) continue;	// exclude small signals
+      if ( Parameters->CH1<Parameters->MinAmp[0] || Parameters->CH2<Parameters->MinAmp[1] ||
+           Parameters->CH3<Parameters->MinAmp[2] || Parameters->CH4<Parameters->MinAmp[3] ) continue;	// exclude small signals
     }
 
-    if ( event%Parameters.prescale ) {
+    if ( event%Parameters->prescale ) {
       event++;
       continue;						// don't log the prescaled trigger
     }
 
     for (i=0; i<4; i++) {                               // loop over channels
       strcpy (buf, "DAT:SOU CH");
-      if (Parameters.get_wave[i])
+      if (Parameters->get_wave[i])
       {
         sprintf (chan, "%d", i+1); 
         strcat (buf, chan);
@@ -580,7 +590,7 @@ void Scope::AcquireWaves()
       }
       TekCmd (buf);			                // data source
 
-      Parameters.got_wave[i] = 0;					// waveforms are all lumped together...
+      Parameters->got_wave[i] = 0;					// waveforms are all lumped together...
       for (j=0; j<NTRIES; j++)
       {
         ByteCount[i] = WavQry ("CURVE?", Curve[i]);	// need to know how many bytes to write out...
@@ -588,32 +598,33 @@ void Scope::AcquireWaves()
         rc = atoi (MyString);
         if ( rc == 0 )					// might need more exception handling here...
         {
-          Parameters.got_wave[i] = 1;
+          Parameters->got_wave[i] = 1;
   	  break;
         }
       }
-      if ( ! Parameters.got_wave[i] )
+      if ( ! Parameters->got_wave[i] )
       {
         printf ("\nWarning! Couldn't read waveform channel %d for event %d\n", i+1, event+1);
         rewrite = 1;
       }
     }
 
-    if (Parameters.WriteToFile) {
+    if (Parameters->WriteToFile) {
       //LogIt (fp, event);
       fMan.addEvent(Curve, ByteCount);
     }
 
     event++;
 
-    if ( ! (event%Parameters.ReportFreq) )
+    if ( ! (event%Parameters->ReportFreq) )
     {
       Counter (event);
     }
-    sleep (Parameters.interval);
+    sleep (Parameters->interval);
   }
 
-  printf ("\nFinished measuring %d events!\n", event);
+  RunComplete();
+
 
   return;
 }
@@ -625,7 +636,7 @@ void Scope::ShutDown()
     Close the scope session.
   */
 
-  if ( ! Parameters.TestMode )
+  if ( ! Parameters->TestMode )
   {
     CloseScope ();
   }
@@ -672,3 +683,132 @@ void Scope::Counter(int n)
   return;
 }
 
+void Scope::MakeHeader(){
+  /*
+    Build the data header.
+  */
+
+  Header="";
+
+  TekCmd ("HEADER ON");
+
+  BldHead ("CH1:SCALE?");
+  BldHead ("CH2:SCALE?");
+  BldHead ("CH3:SCALE?");
+  BldHead ("CH4:SCALE?");
+  BldHead ("CH1:BANDWIDTH?");
+  BldHead ("CH2:BANDWIDTH?");
+  BldHead ("CH3:BANDWIDTH?");
+  BldHead ("CH4:BANDWIDTH?");
+  BldHead ("CH1:COUPLING?");
+  BldHead ("CH2:COUPLING?");
+  BldHead ("CH3:COUPLING?");
+  BldHead ("CH4:COUPLING?");
+#if defined DPO4104B || defined MDO3054
+  BldHead ("CH1:TERM?");
+  BldHead ("CH2:TERM?");
+  BldHead ("CH3:TERM?");
+  BldHead ("CH4:TERM?");
+#elif defined TDS3054B
+  BldHead ("CH1:IMP?");
+  BldHead ("CH2:IMP?");
+  BldHead ("CH3:IMP?");
+  BldHead ("CH4:IMP?");
+#endif
+  BldHead ("CH1:POSITION?");
+  BldHead ("CH2:POSITION?");
+  BldHead ("CH3:POSITION?");
+  BldHead ("CH4:POSITION?");
+  BldHead ("HORIZONTAL?");
+  BldHead ("DISPLAY:XY?");
+  BldHead ("TRIGGER:A:EDGE:SOURCE?");
+  BldHead ("TRIGGER:A:EDGE:SLOPE?");
+  BldHead ("TRIGGER:A:LEVEL?");
+  BldHead ("TRIGGER:A:MODE?");
+  BldHead ("ACQUIRE:MODE?");
+  TekQry ("ACQUIRE:MODE?", MyString);
+  if (strstr(MyString,"AVERAGE")) {
+    BldHead ("ACQUIRE:NUMAVG?");
+  }
+  BldHead ("MEASU:IMM:TYPE?");
+
+  //fprintf (fp, "%s\n");
+  
+
+  TekCmd ("HEADER OFF");
+
+  return;
+}
+
+void Scope::BldHead (string qry)
+{
+  int i;
+  string StrHead=":";
+
+  //strcpy (StrHead, ":");
+  //strncat (StrHead, qry, 3);
+  StrHead = StrHead+qry.substr(0,3);
+  
+
+
+  for (i=0; i<NTRIES; i++)
+  {
+    TekQry (qry, MyString);
+    //if( StrHead.compare(MyString) != 0
+    if ( ! strncmp (StrHead.c_str(), MyString, 4) )
+    {
+      sscanf (MyString, "%[^\n]", MyString);
+      Header = Header+MyString+"\t";
+      //strcat (Header, MyString);
+      //strcat (Header, "\t");
+      return;
+    }
+    else
+    {
+      sleep (1);
+    }
+  }
+
+  printf ("Error! Problem reading run header.\n");
+  ShutDown ();
+
+  return;
+}
+
+
+void Scope::RunComplete(){
+
+  printf ("\nFinished measuring %d events!\n", event);
+
+
+#ifdef NOTIFY
+
+  stringstream ss;
+  ss<<event;
+  string numEvents = ss.str();
+
+
+  char *cd;
+  cd = getenv("PWD");
+  string pwd = cd;
+
+  string subMessage = "Finished measuring "+numEvents+" events!";
+  string icon = pwd+"/temp.png";
+
+
+  notify_init("Sample");
+  NotifyNotification* n = notify_notification_new ("Run Complete", 
+						   subMessage.c_str(),
+						   icon.c_str());
+  notify_notification_set_timeout(n, 10000); // 10 seconds
+  
+  if (!notify_notification_show(n, 0)) 
+    {
+      std::cerr << "show has failed" << std::endl;
+      return ;
+    }
+
+#endif
+
+
+}

@@ -21,9 +21,9 @@ class Scope{
  public:
 
   Scope(){}
-  Scope(ScopeParameters Params){
+  Scope(ScopeParameters *Params){
     Parameters = Params;
-    fMan=fileManager(Params.outfile);
+    fMan=fileManager(Params);
     fMan.OpenFile();
   }
 
@@ -31,16 +31,20 @@ class Scope{
   void OpenScope();
   void InitScope();
   void CloseScope();
+  void ShutDown();
 
   void TekCmd(string cmd);
   void TekQry(string, char *);
   int WavQry(string cmd, char *);
+
   int AcquireData();
   void AcquireWaves();
-  void ShutDown();
-
   void Counter(int n);
 
+  void BldHead(string qry);
+  void MakeHeader();
+
+  void RunComplete();
 
   int rewrite;   // flag to write full report text
 
@@ -54,18 +58,21 @@ class Scope{
   ViChar desc[SLEN];
   char MyString[SLEN];     // generic string variable
 
-  ScopeParameters Parameters;
+  ScopeParameters *Parameters;
 
   char logilevlcmd[TEKSTR];// logic trigger level command string
   char trlevlcmd[TEKSTR];  // trigger level command string
-  char Header[HLEN];  // data header
-
+ 
   int ByteCount[4];  // byte count for curve plus header
   char Curve[4][CLEN];  // waveform
-
+  
+  
   int pid;      // child process id
 
+  string Header;
+
   fileManager fMan;
+  int event;
   
 };
 

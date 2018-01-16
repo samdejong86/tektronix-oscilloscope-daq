@@ -16,6 +16,9 @@ CPPFLAGS +=  -Wall -O2 $(ROOTCFLAGS)
 CPPFLAGS += -DTDS3054B     
 CPPFLAGS += -lvisa
 
+#CPPFLAGS += -DNOTIFY
+#CPPFLAGS += `pkg-config --cflags --libs libnotify`
+
 #TEKLIBS = -lvisa
 
 

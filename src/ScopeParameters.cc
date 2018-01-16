@@ -26,7 +26,7 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
   TEK_Verbose=0;				// TEK scope verbose flag
   ipc_Verbose=0;				// signal verbose flag
   WriteToFile=1;				// write-to-file flag
-  measureData=1;				// amplitude measurements
+  measureData=0;				// amplitude measurements
   passCuts=1;					// all cuts pass by default
   nevent=-1;					// maximum number events to measure
   prescale=1;					// number to prescale the logged events
@@ -144,7 +144,7 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
       {"wave",		required_argument, 0, 'w'},	// record waveform
       {"length",	required_argument, 0, 'l'},	// waveform record length
       {"logic",		required_argument, 0, 'X'},	// logic trigger mode
-      {"measure",	required_argument, 0, 'm'},	// enable amplitude measurements by scope
+      {"measure",	no_argument,       0, 'm'},	// enable amplitude measurements by scope
       {"nevent",	required_argument, 0, 'n'},	// maximum number events to measure
       {"prescale",	required_argument, 0, 'e'},	// number to prescale the logged events
       {"average",	required_argument, 0, 'a'},	// number events to average; sets mode to average...
