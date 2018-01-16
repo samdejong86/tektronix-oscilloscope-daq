@@ -11,7 +11,8 @@ Installation:
 
      NI VISA installation instructions:
           cd /tmp 
-     	  mkdir NiVisa
+	  mkdir NiVisa
+	  cd NiVisa
 	  cp $NIVISALOC/NI-VISA-17.0.0.iso .
      	  mount -o loop NI-VISA-17.0.0.iso .
      	  ./Install
