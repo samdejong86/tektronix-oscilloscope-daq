@@ -194,9 +194,9 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
     switch (c) {
     case 0:
       if (long_options[option_index].flag != 0) break;
-      printf ("option %s", long_options[option_index].name);
-      if (optarg) printf (" with arg %s", optarg);
-      printf ("\n");
+      cout<<"option "<<long_options[option_index].name;
+      if (optarg) cout<<" with arg "<<optarg;
+      cout<<endl;
       break;
     case 'h':
       usage (argv[0]);
@@ -220,7 +220,7 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
       else if ( ! strcmp (optarg, "tek" ) ) TEK_Verbose = 1;
       else if ( ! strcmp (optarg, "sig" ) ) ipc_Verbose = 1;
       else        {
-	printf ("Unrecognized verbose argument: %s\n", optarg);
+	cout<<"Unrecognized verbose argument: "<<optarg<<endl;;
 	usage (argv[0]);
       }
       break;
@@ -243,7 +243,7 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
 	opt_N[wavenum-1] = 1;
       }
       else        {
-	printf ("Unrecognized inhibit display wave argument: %s\n", optarg);
+	cout<<"Unrecognized inhibit display wave argument: "<<optarg<<endl;
 	usage (argv[0]);
       }
       break;
@@ -256,7 +256,7 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
         
       
       else {
-	printf ("Unrecognized get wave argument: %s\n", optarg);
+	cout<<"Unrecognized get wave argument: "<<optarg<<endl;
 	usage (argv[0]);
       }
       break;
@@ -264,7 +264,7 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
       RecLen = (int) atof (optarg);
       opt_l = 1;
       if ( RecLen <= 0 || RecLen > 20000000 ) {
-	printf ("Invalid waveform recordlength argument: %s\n", optarg);
+	cout<<"Invalid waveform recordlength argument: "<<optarg<<endl;
 	usage (argv[0]);
       }
       break;
@@ -388,7 +388,7 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
       strncmp(optarg,"FIF",3) && strncmp(optarg,"75",2) && strncmp(optarg,"MEG",3)
 #endif
 	 ){
-	printf ("Error! Invalid impedance: %s\n", optarg);
+	cout<<"Error! Invalid impedance: "<<optarg<<endl;
 	usage (argv[0]);
       }
       strcat (imped[0], optarg);
@@ -407,7 +407,7 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
 	   strncmp(optarg,"FIF",3) && strncmp(optarg,"75",2) && strncmp(optarg,"MEG",3)
 #endif
 	   ){
-	printf ("Error! Invalid impedance: %s\n", optarg);
+	cout<<"Error! Invalid impedance: "<<optarg<<endl;
 	usage (argv[0]);
       }
       strcat (imped[1], optarg);
@@ -426,7 +426,7 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
 	 strncmp(optarg,"FIF",3) && strncmp(optarg,"75",2) && strncmp(optarg,"MEG",3) 
 #endif
 	 ){
-	printf ("Error! Invalid impedance: %s\n", optarg);
+	cout<<"Error! Invalid impedance: "<<optarg<<endl;
 	usage (argv[0]);
       }
       strcat (imped[2], optarg);
@@ -443,7 +443,7 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
 #elif defined MDO3054
 	if ( strncmp(optarg,"FIF",3) && strncmp(optarg,"75",2) && strncmp(optarg,"MEG",3) ) {
 #endif
-	  printf ("Error! Invalid impedance: %s\n", optarg);
+	  cout<<"Error! Invalid impedance: "<<optarg<<endl;
 	  usage (argv[0]);
 	}
 	strcat (imped[3], optarg);
@@ -456,7 +456,7 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
       opt_P = 1;
       if ( (strncmp (optarg, "AC", 2)) && (strncmp (optarg, "DC", 2)) )
 	{
-	  printf ("Unrecognized coupling argument: %s\n", optarg);
+	  cout<<"Unrecognized coupling argument: "<<optarg<<endl;
 	  usage (argv[0]);
 	}
       break;
@@ -466,7 +466,7 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
         opt_Q = 1;
         if ( (strncmp (optarg, "AC", 2)) && (strncmp (optarg, "DC", 2)) )
 	  {
-	    printf ("Unrecognized coupling argument: %s\n", optarg);
+	    cout<<"Unrecognized coupling argument: "<<optarg<<endl;
 	    usage (argv[0]);
 	  }
         break;
@@ -476,7 +476,7 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
         opt_R = 1;
         if ( (strncmp (optarg, "AC", 2)) && (strncmp (optarg, "DC", 2)) )
 	  {
-	    printf ("Unrecognized coupling argument: %s\n", optarg);
+	    cout<<"Unrecognized coupling argument: "<<optarg<<endl;
 	    usage (argv[0]);
 	  }
         break;
@@ -486,7 +486,7 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
         opt_S = 1;
         if ( (strncmp (optarg, "AC", 2)) && (strncmp (optarg, "DC", 2)) )
         {
-          printf ("Unrecognized coupling argument: %s\n", optarg);
+          cout<<"Unrecognized coupling argument: "<<optarg<<endl;
           usage (argv[0]);
         }
         break;
@@ -500,7 +500,7 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
         opt_s = 1;
         if ( (strncmp (optarg, "FALL", 4)) && (strncmp (optarg, "RISE", 4)) )
 	  {
-	    printf ("Unrecognized trigger slope argument: %s\n", optarg);
+	    cout<<"Unrecognized trigger slope argument: "<<optarg<<endl;
 	    usage (argv[0]);
 	  }
         break;
@@ -536,12 +536,12 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
       case '?':
         if (isprint (optopt))
         {
-	  printf ("Unknown option `-%c'.\n", optopt);
+	  cout<<"Unknown option `-"<<optopt<<"'.\n";
 	  usage (argv[0]);
         }
         else
         {
-	  printf ("Unknown option character `\\x%x'.\n", optopt);
+	  cout<<"Unknown option character `\\x"<<optopt<<"'.\n";
 	  usage (argv[0]);
         }
         break;
@@ -556,7 +556,7 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
   }
   else
   {
-    printf ("Unknown argument: %s\n", argv[optind]);
+    cout<<"Unknown argument: "<<argv[optind]<<endl;
     usage (argv[0]);
   }
 
@@ -565,7 +565,7 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
   {
     if ( (strstr(coupl[i],"AC")) && (strstr(imped[i],"FIF")) )
     {
-      printf ("\nERROR! AC coupling and 50 Ohm impedance are incompatible!\n\n");
+      cout<<"\nERROR! AC coupling and 50 Ohm impedance are incompatible!\n\n"<<endl;
       usage (argv[0]);
     }
   }
@@ -592,67 +592,67 @@ void ScopeParameters::usage (char *prog)
 
   bname = basename (prog);
 
-  printf ("Usage: %s [OPTION]...\n\n", bname);
-  printf ("DAQ program for the tektronix scope.\n\n");
-  printf ("Pressing any key terminates data acquistion and closes the program.\n\n");
-  printf ("Mandatory arguments to long options are mandatory for short options too.\n\n");
-  printf ("-h,\t--help\t\t\tPrint this message and then exit.\n\n");
-  printf ("-q,\t--quiet\t\t\tQuiet mode.\n\n");
-  printf ("-Z,\t--defaults\t\tPrint default scope settings and then exit.\n\n");
-  printf ("-k,\t--keep\t\t\tKeep existing scope settings not explicitly overridden by command line options.\n\n");
-  printf ("-r,\t--report=FREQ\t\tSpecify report frequency for number of measurements.\n\n");
-  printf ("-v,\t--verbose=MODE\t\tVerbose output; MODE may be:\n\n");
-  printf ("\t\t\t\t\t'opt'\tfor getopt command line parsing\n");
-  printf ("\t\t\t\t\t'tek'\tfor Tektronix scope commands\n");
-  printf ("\t\t\t\t\t'sig'\tfor interprocess signal commands\n");
-  printf ("\t\t\t\t\t'all'\tfor all verbose\n\n");
-  printf ("-o,\t--output=FILE\t\tSpecify output data file; default is \"tek.dat\";\n");
-  printf ("\t\t\t\tif FILE is \"none\", then no output data file is written.\n\n");
-  printf ("-w,\t--wave=CH\t\tRecord waveform data for channel CH; specify 'a' for all channels.\n\n");
-  printf ("-l,\t--length=LENGTH\t\tSpecify the waveform recordlength; not independent of the time base...\n");
+  cout<<"Usage: "<<bname<<" [OPTION]...\n\n";
+  cout<<"DAQ program for the tektronix scope.\n\n";
+  cout<<"Pressing any key terminates data acquistion and closes the program.\n\n";
+  cout<<"Mandatory arguments to long options are mandatory for short options too.\n\n";
+  cout<<"-h,\t--help\t\t\tPrint this message and then exit.\n\n";
+  cout<<"-q,\t--quiet\t\t\tQuiet mode.\n\n";
+  cout<<"-Z,\t--defaults\t\tPrint default scope settings and then exit.\n\n";
+  cout<<"-k,\t--keep\t\t\tKeep existing scope settings not explicitly overridden by command line options.\n\n";
+  cout<<"-r,\t--report=FREQ\t\tSpecify report frequency for number of measurements.\n\n";
+  cout<<"-v,\t--verbose=MODE\t\tVerbose output; MODE may be:\n\n";
+  cout<<"\t\t\t\t\t'opt'\tfor getopt command line parsing\n";
+  cout<<"\t\t\t\t\t'tek'\tfor Tektronix scope commands\n";
+  cout<<"\t\t\t\t\t'sig'\tfor interprocess signal commands\n";
+  cout<<"\t\t\t\t\t'all'\tfor all verbose\n\n";
+  cout<<"-o,\t--output=FILE\t\tSpecify output data file; default is \"tek.dat\";\n";
+  cout<<"\t\t\t\tif FILE is \"none\", then no output data file is written.\n\n";
+  cout<<"-w,\t--wave=CH\t\tRecord waveform data for channel CH; specify 'a' for all channels.\n\n";
+  cout<<"-l,\t--length=LENGTH\t\tSpecify the waveform recordlength; not independent of the time base...\n";
 #if defined DPO4104B
-  printf ("\t\t\t\tAllowed values are: 1.E3, 1.E4, 1.E5, 1.E6, 5.E6, 1.E7, and 2.E7\n\n");
+  cout<<"\t\t\t\tAllowed values are: 1.E3, 1.E4, 1.E5, 1.E6, 5.E6, 1.E7, and 2.E7\n\n";
 #elif defined MDO3054
-  printf ("\t\t\t\tAllowed values are: 1.E3, 1.E4, 1.E5, 1.E6, 5.E6, and 1.E7\n\n");
+  cout<<"\t\t\t\tAllowed values are: 1.E3, 1.E4, 1.E5, 1.E6, 5.E6, and 1.E7\n\n";
 #elif defined TDS3054B
-  printf ("\t\t\t\tAllowed values are: 5.E2 and 1.E4\n\n");
+  cout<<"\t\t\t\tAllowed values are: 5.E2 and 1.E4\n\n";
 #endif
-  printf ("\t--logic=PATTERN\t\tLogic trigger.\n");
-  printf ("\t\t\t\tLogic pattern 3AND4LO would require channels 3 AND 4 LOw (eg, NIM) for trigger.\n\n");
-  printf ("-m,\t--measure\t\tEnable (1) or disable (0) amplitude measurements by scope.\n\n");
-  printf ("-n,\t--nevent=NUM\t\tSpecify Number of events to measure; default is unlimited.\n\n");
-  printf ("-a,\t--average=NUM\t\tSpecify number of triggers to Average for each event.\n");
-  printf ("\t\t\t\tNote that if a prescale value is set, nevent will be the number\n");
-  printf ("\t\t\t\tof triggers, not the number of events written to file.\n\n");
-  printf ("-e,\t--prescale=NUM\t\tSpecify number to prescale logged events.\n\n");
-  printf ("-d,\t--duration=SEC\t\tSpecify duration in seconds to acquire data; default is unlimited.\n\n");
-  printf ("-i,\t--interval=SEC\t\tSpecify interval in seconds to sleep between acquisitions; default is zero.\n\n");
-  printf ("\t--timeout=SEC\t\tSpecify the acquisition timeout period in seconds; default is unlimited.\n\n");
-  printf ("-N,\t--nodisplay=CH\t\tInhibit display for wave (channel) CH.\n\n");
-  printf ("\t--nolock\t\tDon't lock out the front panel controls.\n\n");
+  cout<<"\t--logic=PATTERN\t\tLogic trigger.\n";
+  cout<<"\t\t\t\tLogic pattern 3AND4LO would require channels 3 AND 4 LOw (eg, NIM) for trigger.\n\n";
+  cout<<"-m,\t--measure\t\tEnable (1) or disable (0) amplitude measurements by scope.\n\n";
+  cout<<"-n,\t--nevent=NUM\t\tSpecify Number of events to measure; default is unlimited.\n\n";
+  cout<<"-a,\t--average=NUM\t\tSpecify number of triggers to Average for each event.\n";
+  cout<<"\t\t\t\tNote that if a prescale value is set, nevent will be the number\n";
+  cout<<"\t\t\t\tof triggers, not the number of events written to file.\n\n";
+  cout<<"-e,\t--prescale=NUM\t\tSpecify number to prescale logged events.\n\n";
+  cout<<"-d,\t--duration=SEC\t\tSpecify duration in seconds to acquire data; default is unlimited.\n\n";
+  cout<<"-i,\t--interval=SEC\t\tSpecify interval in seconds to sleep between acquisitions; default is zero.\n\n";
+  cout<<"\t--timeout=SEC\t\tSpecify the acquisition timeout period in seconds; default is unlimited.\n\n";
+  cout<<"-N,\t--nodisplay=CH\t\tInhibit display for wave (channel) CH.\n\n";
+  cout<<"\t--nolock\t\tDon't lock out the front panel controls.\n\n";
 #if defined DPO4104B
-  printf ("-c,\t--trsrc=CH\t\tSpecify the trigger channel; specify '0' for AUX IN.\n\n");
+  cout<<"-c,\t--trsrc=CH\t\tSpecify the trigger channel; specify '0' for AUX IN.\n\n";
 #elif defined MDO3054
-  printf ("-c,\t--trsrc=CH\t\tSpecify the trigger channel.\n\n");
+  cout<<"-c,\t--trsrc=CH\t\tSpecify the trigger channel.\n\n";
 #elif defined TDS3054B
-  printf ("-c,\t--trsrc=CH\t\tSpecify the trigger channel; specify '0' for 'EXT', '10' for 'EXT10'.\n\n");
+  cout<<"-c,\t--trsrc=CH\t\tSpecify the trigger channel; specify '0' for 'EXT', '10' for 'EXT10'.\n\n";
 #endif
-  printf ("-t,\t--trlevel=TRIG_LEVEL\tSpecify trigger level (in volts).\n");
-  printf ("\t\t\t\tExamples: 1.E+0, 1.E-2, -2.3E-3\n\n");
-  printf ("-s,\t--trslope=TRIG_SLOPE\tSpecify the trigger edge slope - FALL or RISE.\n\n");
-  printf ("\t--amp<N>=AMPLITUDE\tSpecify the minimum channel <N> signal amplitude (in volts) to record event.\n\n");
-  printf ("\t--pos<N>=POSITION\tSpecify vertical position (in divisions) for channel <N>.\n\n");
-  printf ("\t--vsca<N>=VSCALE\tSpecify vertical scale (in volts) for channel <N>.\n\n");
-  printf ("\t--coupl<N>=COUPL\tSpecify coupling for channel <N>, 'AC' or 'DC'; default is 'DC'.\n\n");
+  cout<<"-t,\t--trlevel=TRIG_LEVEL\tSpecify trigger level (in volts).\n";
+  cout<<"\t\t\t\tExamples: 1.E+0, 1.E-2, -2.3E-3\n\n";
+  cout<<"-s,\t--trslope=TRIG_SLOPE\tSpecify the trigger edge slope - FALL or RISE.\n\n";
+  cout<<"\t--amp<N>=AMPLITUDE\tSpecify the minimum channel <N> signal amplitude (in volts) to record event.\n\n";
+  cout<<"\t--pos<N>=POSITION\tSpecify vertical position (in divisions) for channel <N>.\n\n";
+  cout<<"\t--vsca<N>=VSCALE\tSpecify vertical scale (in volts) for channel <N>.\n\n";
+  cout<<"\t--coupl<N>=COUPL\tSpecify coupling for channel <N>, 'AC' or 'DC'; default is 'DC'.\n\n";
 #if defined DPO4104B || defined TDS3054B
-  printf ("\t--imped<N>=IMPED\tSpecify impedance for channel <N>, 'FIF' or 'MEG'; default is 'MEG'.\n\n");
+  cout<<"\t--imped<N>=IMPED\tSpecify impedance for channel <N>, 'FIF' or 'MEG'; default is 'MEG'.\n\n";
 #elif defined MDO3054
-  printf ("\t--imped<N>=IMPED\tSpecify impedance for channel <N>, 'FIF', '75', or 'MEG'; default is 'MEG'.\n\n");
+  cout<<"\t--imped<N>=IMPED\tSpecify impedance for channel <N>, 'FIF', '75', or 'MEG'; default is 'MEG'.\n\n";
 #endif
-  printf ("-b,\t--hsamp=HSAMP\t\tSpecify the horizontal scale (in seconds);\n");
-  printf ("\t\t\t\tnote that this can effect the sample rate.\n\n");
-  printf ("-p,\t--pretrigger=PRE_TRIG\tSpecify the amount of pretrigger (percent).\n\n");
-  printf ("-T,\t--tmode=NUM\t\tTest mode; tmode = 1 bybasses all scope commands\n\n");
+  cout<<"-b,\t--hsamp=HSAMP\t\tSpecify the horizontal scale (in seconds);\n";
+  cout<<"\t\t\t\tnote that this can effect the sample rate.\n\n";
+  cout<<"-p,\t--pretrigger=PRE_TRIG\tSpecify the amount of pretrigger (percent).\n\n";
+  cout<<"-T,\t--tmode=NUM\t\tTest mode; tmode = 1 bybasses all scope commands\n\n";
 
   exit (-1);
 }
@@ -660,68 +660,68 @@ void ScopeParameters::usage (char *prog)
 //Print out default parameters
  void ScopeParameters::Defaults ()
 {
-  printf ("\n\t\t\t\tDefault Scope Settings\n\n");
-  printf ("vertical scale channel 1:\t\t\t\t%s\n", SCALE);
-  printf ("vertical scale channel 2:\t\t\t\t%s\n", SCALE);
-  printf ("vertical scale channel 3:\t\t\t\t%s\n", SCALE);
-  printf ("vertical scale channel 4:\t\t\t\t%s\n", SCALE);
-  printf ("sample rate:\t\t\t\t\t\t%s\n", HSAMP);
-  printf ("trigger edge slope:\t\t\t\t\t%s\n", SLOPE);
-  printf ("pretrigger amount (percent):\t\t\t\t%s\n", HTRPOS);
-  printf ("trigger level:\t\t\t\t\t\t%s\n", TRLEV);
-  printf ("position channel 1:\t\t\t\t\t%s\n", POS);
-  printf ("position channel 2:\t\t\t\t\t%s\n", POS);
-  printf ("position channel 3:\t\t\t\t\t%s\n", POS);
-  printf ("position channel 4:\t\t\t\t\t%s\n", POS);
-  printf ("waveform record length:\t\t\t\t\t%d\n", RECLEN);
-  printf ("minimum signal amplitude channel 1 to record event:\t%f\n", MinAmp[0]);
-  printf ("minimum signal amplitude channel 2 to record event:\t%f\n", MinAmp[1]);
-  printf ("minimum signal amplitude channel 3 to record event:\t%f\n", MinAmp[2]);
-  printf ("minimum signal amplitude channel 4 to record event:\t%f\n", MinAmp[3]);
-  printf ("\n");
+  cout<<"\n\t\t\t\tDefault Scope Settings\n\n"<<endl;
+  cout<<"vertical scale channel 1:\t\t\t\t"<<SCALE<<endl;
+  cout<<"vertical scale channel 2:\t\t\t\t"<<SCALE<<endl;
+  cout<<"vertical scale channel 3:\t\t\t\t"<<SCALE<<endl;
+  cout<<"vertical scale channel 4:\t\t\t\t"<<SCALE<<endl;
+  cout<<"sample rate:\t\t\t\t\t\t"<<HSAMP<<endl;
+  cout<<"trigger edge slope:\t\t\t\t\t"<<SLOPE<<endl;
+  cout<<"pretrigger amount (percent):\t\t\t\t"<<HTRPOS<<endl;
+  cout<<"trigger level:\t\t\t\t\t\t"<<TRLEV<<endl;
+  cout<<"position channel 1:\t\t\t\t\t"<<POS<<endl;
+  cout<<"position channel 2:\t\t\t\t\t"<<POS<<endl;
+  cout<<"position channel 3:\t\t\t\t\t"<<POS<<endl;
+  cout<<"position channel 4:\t\t\t\t\t"<<POS<<endl;
+  cout<<"waveform record length:\t\t\t\t\t"<<RECLEN<<endl;
+  cout<<"minimum signal amplitude channel 1 to record event:\t:"<<MinAmp[0]<<endl;
+  cout<<"minimum signal amplitude channel 2 to record event:\t:"<<MinAmp[1]<<endl;
+  cout<<"minimum signal amplitude channel 3 to record event:\t:"<<MinAmp[2]<<endl;
+  cout<<"minimum signal amplitude channel 4 to record event:\t:"<<MinAmp[3]<<endl;
+  cout<<endl;
 
   exit (0);
 }
  
  //print out verbose parameters
  void ScopeParameters::printVerbose(){
-   printf ("Output file = \t\t\t%s\n", outfile);
-    printf ("Report frequency = \t\t%d\n", ReportFreq);
-    printf ("WriteToFile flag = \t\t%d\n", WriteToFile);
-    printf ("Record channel 1 waveform = \t%d\n", get_wave[0]);
-    printf ("Record channel 2 waveform = \t%d\n", get_wave[1]);
-    printf ("Record channel 3 waveform = \t%d\n", get_wave[2]);
-    printf ("Record channel 4 waveform = \t%d\n", get_wave[3]);
-    printf ("Measure flag = \t\t\t%d\n", measureData);
-    printf ("Number of events to measure = \t%d\n", nevent);
-    printf ("Number of seconds to acquire data = \t\t%d\n", duration);
-    printf ("Number of seconds between data acquisitions = \t%d\n", interval);
-    printf ("Scope lock flag = \t\t%d\n", lock);
-    printf ("Trigger channel = \t\t%s\n",trsrc);
-    printf ("Trigger level = \t\t%s\n", trlevl);
-    printf ("Trigger slope = \t\t%s\n", trslop);
-    printf ("Pretrigger amount = \t\t%s\n", htrpos);
-    printf ("CH1 position = \t\t\t%s\n", pos[0]);
-    printf ("CH2 position = \t\t\t%s\n", pos[1]);
-    printf ("CH3 position = \t\t\t%s\n", pos[2]);
-    printf ("CH4 position = \t\t\t%s\n", pos[3]);
-    printf ("CH1 vertical scale = \t\t%s\n", vscal[0]);
-    printf ("CH2 vertical scale = \t\t%s\n", vscal[1]);
-    printf ("CH3 vertical scale = \t\t%s\n", vscal[2]);
-    printf ("CH4 vertical scale = \t\t%s\n", vscal[3]);
-    printf ("CH1 coupling = \t\t%s\n", coupl[0]);
-    printf ("CH2 coupling = \t\t%s\n", coupl[1]);
-    printf ("CH3 coupling = \t\t%s\n", coupl[2]);
-    printf ("CH4 coupling = \t\t%s\n", coupl[3]);
-    printf ("CH1 impedance = \t\t%s\n", imped[0]);
-    printf ("CH2 impedance = \t\t%s\n", imped[1]);
-    printf ("CH3 impedance = \t\t%s\n", imped[2]);
-    printf ("CH4 impedance = \t\t%s\n", imped[3]);
-    printf ("CH1 minimum amplitude = \t%f\n", MinAmp[0]);
-    printf ("CH2 minimum amplitude = \t%f\n", MinAmp[1]);
-    printf ("CH3 minimum amplitude = \t%f\n", MinAmp[2]);
-    printf ("CH4 minimum amplitude = \t%f\n", MinAmp[3]);
-    printf ("Horizontal Sample Rate = \t%s\n", hsamp);
+   cout<<"Output file = \t\t\t"<<outfile<<endl;
+   cout<<"Report frequency = \t\t"<<ReportFreq<<endl;
+   cout<<"WriteToFile flag = \t\t"<<WriteToFile<<endl;
+   cout<<"Record channel 1 waveform = \t"<<get_wave[0]<<endl;
+   cout<<"Record channel 2 waveform = \t"<<get_wave[1]<<endl;
+   cout<<"Record channel 3 waveform = \t"<<get_wave[2]<<endl;
+   cout<<"Record channel 4 waveform = \t"<<get_wave[3]<<endl;
+   cout<<"Measure flag = \t\t\t"<<measureData<<endl;
+   cout<<"Number of events to measure = \t"<<nevent<<endl;
+   cout<<"Number of seconds to acquire data = \t\t"<<duration<<endl;
+   cout<<"Number of seconds between data acquisitions = \t"<<interval<<endl;
+   cout<<"Scope lock flag = \t\t"<<lock<<endl;
+   cout<<"Trigger channel = \t\t"<<trsrc<<endl;
+   cout<<"Trigger level = \t\t"<<trlevl<<endl;
+   cout<<"Trigger slope = \t\t"<<trslop<<endl;
+   cout<<"Pretrigger amount = \t\t"<<htrpos<<endl;
+   cout<<"CH1 position = \t\t\t"<<pos[0]<<endl;
+   cout<<"CH2 position = \t\t\t"<<pos[1]<<endl;
+   cout<<"CH3 position = \t\t\t"<<pos[2]<<endl;
+   cout<<"CH4 position = \t\t\t"<<pos[3]<<endl;
+   cout<<"CH1 vertical scale = \t\t"<<vscal[0]<<endl;
+   cout<<"CH2 vertical scale = \t\t"<<vscal[1]<<endl;
+   cout<<"CH3 vertical scale = \t\t"<<vscal[2]<<endl;
+   cout<<"CH4 vertical scale = \t\t"<<vscal[3]<<endl;
+   cout<<"CH1 coupling = \t\t"<<coupl[0]<<endl;
+   cout<<"CH2 coupling = \t\t"<<coupl[1]<<endl;
+   cout<<"CH3 coupling = \t\t"<<coupl[2]<<endl;
+   cout<<"CH4 coupling = \t\t"<<coupl[3]<<endl;
+   cout<<"CH1 impedance = \t\t"<<imped[0]<<endl;
+   cout<<"CH2 impedance = \t\t"<<imped[1]<<endl;
+   cout<<"CH3 impedance = \t\t"<<imped[2]<<endl;
+   cout<<"CH4 impedance = \t\t"<<imped[3]<<endl;
+   cout<<"CH1 minimum amplitude = \t"<<MinAmp[0]<<endl;
+   cout<<"CH2 minimum amplitude = \t"<<MinAmp[1]<<endl;
+   cout<<"CH3 minimum amplitude = \t"<<MinAmp[2]<<endl;
+   cout<<"CH4 minimum amplitude = \t"<<MinAmp[3]<<endl;
+   cout<<"Horizontal Sample Rate = \t"<<hsamp<<endl;
 
  }
 

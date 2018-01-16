@@ -14,13 +14,13 @@ void fileManager::OpenFile(){
   //check if file exists, prompt for overwrite
   if ( ! stat (fname.c_str(), &buf) )
     {
-      printf ("Overwrite existing file `%s'? (y/n) ", fname.c_str());
+      cout<<"Overwrite existing file `"<<fname<<"'? (y/n) ";
       fflush (stdout);
       if (getc (stdin) != 'y')
 	{
 	  exit (0);
 	}
-      printf ("\n");
+      cout<<endl;
     }
   
   f = new TFile(fname.c_str(), "RECREATE");  //open TFile

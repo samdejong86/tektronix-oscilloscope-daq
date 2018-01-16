@@ -26,9 +26,9 @@ void Scope::OpenScope()
   status = viOpenDefaultRM (&defaultRM);
   if ( status < VI_SUCCESS )
   {
-    printf ("Cannot open session to VISA Resource Manager.\n");
+    cout<<"Cannot open session to VISA Resource Manager"<<endl;
     viStatusDesc(defaultRM,status,statdsc);
-    printf("Error on viOpenDefaultRM: %s \n",statdsc);
+    cout<<"Error on viOpenDefaultRM: "<<statdsc<<endl;
     exit (-1);
   }
 
@@ -37,10 +37,10 @@ void Scope::OpenScope()
   status = viOpen (defaultRM, (ViChar*)address, VI_NULL, VI_NULL, &scope);
   if ( status < VI_SUCCESS )
   {
-    printf ("Cannot open session to scope.\n");
+    cout<<"Cannot open session to scope."<<endl;
     viStatusDesc(defaultRM,status,statdsc);
-    printf("Error on viOpen: %s \n",statdsc);
-    printf ("Cycle the scope power and try again.\n");
+    cout<<"Error on viOpen: "<<statdsc<<endl;
+    cout<<"Cycle the scope power and try again."<<endl;
     exit (-1);
   }
 
@@ -48,9 +48,9 @@ void Scope::OpenScope()
   status = viSetAttribute (scope, VI_ATTR_TMO_VALUE, TOUT);
   if ( status < VI_SUCCESS )
   {
-    printf ("Cannot set timeout value.\n");
+    cout<<"Cannot set timeout value."<<endl;
     viStatusDesc(defaultRM,status,statdsc);
-    printf("Error on viSetAttribute: %s \n",statdsc);
+    cout<<"Error on viSetAttribute: "<<statdsc<<endl;;
     ShutDown ();
   }
 
@@ -58,9 +58,9 @@ void Scope::OpenScope()
   status = viClear (scope);
   if (status < VI_SUCCESS)
   {
-    printf ("Error clearing scope.\n");
+    cout<<"Error clearing scope."<<endl;
     viStatusDesc(defaultRM,status,statdsc);
-    printf("Error on viClear: %s \n",statdsc);
+    cout<<"Error on viClear: %s \n"<<statdsc<<endl;;
     ShutDown ();
   }
 
@@ -68,9 +68,9 @@ void Scope::OpenScope()
   status = viFlush (scope, VI_READ_BUF);
   if (status < VI_SUCCESS)
   {
-    printf ("Error flushing scope.\n");
+    cout<<"Error flushing scope."<<endl;
     viStatusDesc(defaultRM,status,statdsc);
-    printf("Error on viFlush: %s \n",statdsc);
+    cout<<"Error on viFlush: "<<statdsc<<endl;
     ShutDown ();
   }
 
@@ -85,7 +85,7 @@ void Scope::CloseScope()
 
   if ( Parameters->TEK_Verbose )
   {
-    printf ("Closing down the scope...\n");
+    cout<<"Closing down the scope..."<<endl;
   }
 
   //viClear (scope);		// this seems to sometimes leave the scope in a locked state...
@@ -150,7 +150,7 @@ void Scope::TekQry(string cmd, char rtn[SLEN])
     if ( Parameters->TEK_Verbose )
     {
       sscanf (rtn, "%[^\n]", rtn);
-      printf ("Query response read from scope: %s (%d bytes).\n", rtn, (int) retCount);
+      cout<<"Query response read from scope: "<<rtn<<" ("<<(int) retCount<<" bytes).\n"<<endl;
     }
   }
   return;
@@ -177,7 +177,7 @@ int Scope::WavQry(string cmd, char rtn[CLEN])
   {
     if ( Parameters->TEK_Verbose )
     {
-      printf ("Waveform bytes read from scope: %d.\n", (int) retCount);
+      cout<<"Waveform bytes read from scope: "<< (int) retCount<<endl;
     }
   }
   return (int) retCount;
@@ -199,7 +199,7 @@ void Scope::InitScope()
 
   TekCmd ("HEAD ON");
   TekQry ("*IDN?", MyString);			// get the scope ID
-  printf ("%s\n", MyString);
+  cout<<MyString<<endl;
   TekCmd ("HEAD OFF");
 
   if ( Parameters->lock )
@@ -253,8 +253,8 @@ void Scope::InitScope()
     TekQry ("HORIZONTAL:RECORDLENGTH?", MyString);
     ScopeRecLen = atoi (MyString);			// actual waveform recordlenth recorded by scope
     if ( ScopeRecLen != Parameters->RecLen ) {
-      printf ("Warning!  Requested waveform recordlength %d, ", Parameters->RecLen);
-      printf ("but scope is recording recordlength %d.\n", ScopeRecLen);
+      cout<<"Warning!  Requested waveform recordlength "<<Parameters->RecLen<<",";
+      cout<<"but scope is recording recordlength "<<ScopeRecLen<<endl;
     }
     if ( ScopeRecLen == 0 ) {
       ShutDown ();
@@ -402,7 +402,7 @@ void Scope::InitScope()
 
   if ( Parameters->TEK_Verbose )
   {
-    printf ("Finished initializing Tektronix TDS7404B scope...\n");
+    cout<<"Finished initializing Tektronix TDS7404B scope..."<<endl;
   }
   
 
@@ -476,7 +476,7 @@ void Scope::AcquireWaves()
   while ( 1 ) {
     if ( Parameters->aq_timeout >= 0 ) {			        // acquistion timeout must have been set...
       if ( time (NULL) - t0 >= Parameters->aq_timeout ) {
-        printf ("Acquisition Timeout!\n");
+        cout<<"Acquisition Timeout!"<<endl;
         ShutDown ();
       }
     }
@@ -523,7 +523,7 @@ void Scope::AcquireWaves()
     }
     if ( ! Parameters->got_wave[i] )
     {
-      printf ("\nWarning! Couldn't read header channel %d\n", i+1);
+      cout<<"\nWarning! Couldn't read header channel "<<i+1<<endl;
       rewrite = 1;
     }
     else
@@ -556,7 +556,7 @@ void Scope::AcquireWaves()
     while ( 1 ) {
       if ( Parameters->aq_timeout >= 0 ) {			        // acquistion timeout must have been set...
         if ( time (NULL) - t0 >= Parameters->aq_timeout ) {
-          printf ("Acquisition Timeout!\n");
+          cout<<"Acquisition Timeout!"<<endl;
           ShutDown ();
         }
       }
@@ -604,7 +604,7 @@ void Scope::AcquireWaves()
       }
       if ( ! Parameters->got_wave[i] )
       {
-        printf ("\nWarning! Couldn't read waveform channel %d for event %d\n", i+1, event+1);
+        cout<<"\nWarning! Couldn't read waveform channel "<<i+1<<" for event "<<event+1<<endl;
         rewrite = 1;
       }
     }
@@ -658,13 +658,13 @@ void Scope::Counter(int n)
 
   if ( rewrite )
   {
-    printf ("number of events so far = ");
+    cout<<"number of events so far = ";
     rewrite = 0;
   }
 
   for (i=0; i<d; i++)
   {
-    printf ("\b");
+    cout<<"\b";
   }
 
   d = log10 (n);
@@ -677,7 +677,7 @@ void Scope::Counter(int n)
     d = d + 1;
   }
 
-  printf ("%d",n);
+  cout<<n<<endl;
   fflush (stdout);
 
   return;
@@ -763,7 +763,7 @@ void Scope::BldHead (string qry)
     }
   }
 
-  printf ("Error! Problem reading run header.\n");
+  cout<<"Error! Problem reading run header."<<endl;
   ShutDown ();
 
   return;
@@ -772,7 +772,7 @@ void Scope::BldHead (string qry)
 
 void Scope::RunComplete(){
 
-  printf ("\nFinished measuring %d events!\n", event);
+  cout<<"\nFinished measuring "<<event<<" events!\n";
 
 
   /*
@@ -794,7 +794,6 @@ void Scope::RunComplete(){
   string icon = pwd+"/icon/tek.png";
 
   string command = "notify-send "+subMessage+" -i "+icon;
-  cout<<command<<endl;
   system(command.c_str());
 
 #endif
