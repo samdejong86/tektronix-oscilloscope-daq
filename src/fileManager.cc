@@ -24,7 +24,7 @@ void fileManager::OpenFile(){
     }
   
   f = new TFile(fname.c_str(), "RECREATE");  //open TFile
-  t = new TTree("wave", "wave");  //initalize the TTree
+  t = new TTree("data", "Waveform data");  //initalize the TTree
 
   //resize the vector of vectors to have 4 entries
   data.resize(4);  

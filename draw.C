@@ -3,7 +3,7 @@
 void draw(TString file, int ch, int event){
 
   TFile *f = new TFile(file);
-  TTree *t = (TTree*)f->Get("wave");
+  TTree *t = (TTree*)f->Get("data");
 
   stringstream ss;
   ss<<ch;
@@ -21,8 +21,10 @@ void draw(TString file, int ch, int event){
   
   for(int i=0; i<data->size(); i++){
     gr->SetPoint(i, i*xinc/1e-6, data->at(i));
-
   }
+
+  gr->GetXaxis()->SetTitle("time (#mus)");
+  gr->GetYaxis()->SetTitle("Voltage (mV)");
 
   gr->Draw("AL");
 
