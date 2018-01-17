@@ -10,9 +10,16 @@ using namespace std;
 #include "fileManager.h"
 #include "ScopeParameters.h"
 #include "Scope.h"
+#include "xmlParser.h"
 
 
 int main (int argc, char *argv[]){
+
+  /*
+  XmlParser settings("settings.xml", false);
+
+  settings.print();
+  */
 
   //initalize ScopeParameters object
   ScopeParameters *Params = new ScopeParameters(argc, argv);

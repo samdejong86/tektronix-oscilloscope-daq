@@ -1,4 +1,5 @@
 #include <getopt.h>
+#include <sstream>
 
 using namespace std;
 
@@ -92,7 +93,7 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
 
   for (i=0; i<4; i++)  {
     sprintf (chan, "%d", i+1);
-
+    
     strcpy (pos[i], "CH");			// vertical position (offset)
     strcat (pos[i], chan);
     strcat (pos[i], ":POS ");
@@ -131,6 +132,9 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
   /*
 	--- end of program defaults
   */
+
+  bool xml=false;
+    
 
   while ( 1 ) {
 
@@ -180,17 +184,17 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
       {"imped4",	required_argument, 0, '8'},	// impedance channel 4
       {"hsamp",		required_argument, 0, 'b'},	// sample rate
       {"tmode",     	required_argument, 0, 'T'},	// test mode
+      {"xml",		required_argument, 0, 'x'},	// logic trigger mode
       {0, 0, 0, 0}
     };
 
     int option_index = 0;
     // leave case out of the list if no short option is to be allowed
-    c = getopt_long (argc, argv, "hqZkv:r:o:N:w:l:X:m:n:e:a:d:i:c:t:s:p:b:T:", long_options, &option_index);
-    
+    c = getopt_long (argc, argv, "hqZkv:r:o:N:w:l:X:m:n:e:a:d:i:c:t:s:p:b:T:x:", long_options, &option_index);
+ 
     if (c == -1) break;					// end of the options
     
     
-
     switch (c) {
     case 0:
       if (long_options[option_index].flag != 0) break;
@@ -396,17 +400,17 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
       break;
     case '6':
 #if defined DPO4104B || defined MDO3054
-        strcpy (imped[1], "CH2:TERM ");
+      strcpy (imped[1], "CH2:TERM ");
 #elif defined TDS3054B
-        strcpy (imped[1], "CH2:IMP ");
+      strcpy (imped[1], "CH2:IMP ");
 #endif
-	if(
+      if(
 #if defined DPO4104B || defined TDS3054B
-	   strncmp(optarg,"FIF",3) && strncmp(optarg,"MEG",3)
+	 strncmp(optarg,"FIF",3) && strncmp(optarg,"MEG",3)
 #elif defined MDO3054
-	   strncmp(optarg,"FIF",3) && strncmp(optarg,"75",2) && strncmp(optarg,"MEG",3)
+	 strncmp(optarg,"FIF",3) && strncmp(optarg,"75",2) && strncmp(optarg,"MEG",3)
 #endif
-	   ){
+	 ){
 	cout<<"Error! Invalid impedance: "<<optarg<<endl;
 	usage (argv[0]);
       }
@@ -438,17 +442,19 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
 #elif defined TDS3054B
       strcpy (imped[3], "CH4:IMP ");
 #endif
+      if(
 #if defined DPO4104B || defined TDS3054B
-      if ( strncmp(optarg,"FIF",3) && strncmp(optarg,"MEG",3) ) {
+	 strncmp(optarg,"FIF",3) && strncmp(optarg,"MEG",3) 
 #elif defined MDO3054
-	if ( strncmp(optarg,"FIF",3) && strncmp(optarg,"75",2) && strncmp(optarg,"MEG",3) ) {
+	 strncmp(optarg,"FIF",3) && strncmp(optarg,"75",2) && strncmp(optarg,"MEG",3) 
 #endif
-	  cout<<"Error! Invalid impedance: "<<optarg<<endl;
-	  usage (argv[0]);
-	}
-	strcat (imped[3], optarg);
-	opt_8 = 1;
-	break;
+	 ){
+	cout<<"Error! Invalid impedance: "<<optarg<<endl;
+	usage (argv[0]);
+      }
+      strcat (imped[3], optarg);
+      opt_8 = 1;
+      break;
       
     case 'P':
       strcpy (coupl[0], "CH1:COUPL ");
@@ -460,128 +466,134 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
 	  usage (argv[0]);
 	}
       break;
-      case 'Q':
-	strcpy (coupl[1], "CH2:COUPL ");
-	strcat (coupl[1], optarg);
-        opt_Q = 1;
-        if ( (strncmp (optarg, "AC", 2)) && (strncmp (optarg, "DC", 2)) )
-	  {
-	    cout<<"Unrecognized coupling argument: "<<optarg<<endl;
-	    usage (argv[0]);
-	  }
-        break;
-      case 'R':
-        strcpy (coupl[2], "CH3:COUPL ");
-        strcat (coupl[2], optarg);
-        opt_R = 1;
-        if ( (strncmp (optarg, "AC", 2)) && (strncmp (optarg, "DC", 2)) )
-	  {
-	    cout<<"Unrecognized coupling argument: "<<optarg<<endl;
-	    usage (argv[0]);
-	  }
-        break;
-      case 'S':
-        strcpy (coupl[3], "CH4:COUPL ");
-        strcat (coupl[3], optarg);
-        opt_S = 1;
-        if ( (strncmp (optarg, "AC", 2)) && (strncmp (optarg, "DC", 2)) )
+    case 'Q':
+      strcpy (coupl[1], "CH2:COUPL ");
+      strcat (coupl[1], optarg);
+      opt_Q = 1;
+      if ( (strncmp (optarg, "AC", 2)) && (strncmp (optarg, "DC", 2)) )
+	{
+	  cout<<"Unrecognized coupling argument: "<<optarg<<endl;
+	  usage (argv[0]);
+	}
+      break;
+    case 'R':
+      strcpy (coupl[2], "CH3:COUPL ");
+      strcat (coupl[2], optarg);
+      opt_R = 1;
+      if ( (strncmp (optarg, "AC", 2)) && (strncmp (optarg, "DC", 2)) )
+	{
+	  cout<<"Unrecognized coupling argument: "<<optarg<<endl;
+	  usage (argv[0]);
+	}
+      break;
+    case 'S':
+      strcpy (coupl[3], "CH4:COUPL ");
+      strcat (coupl[3], optarg);
+      opt_S = 1;
+      if ( (strncmp (optarg, "AC", 2)) && (strncmp (optarg, "DC", 2)) )
         {
           cout<<"Unrecognized coupling argument: "<<optarg<<endl;
           usage (argv[0]);
         }
-        break;
-      case 't':
-        strcpy (trlevl, optarg);
-        opt_t = 1;
-        break;
-      case 's':
-        strcpy (trslop, "TRIG:A:EDGE:SLO ");
-        strcat (trslop, optarg);
-        opt_s = 1;
-        if ( (strncmp (optarg, "FALL", 4)) && (strncmp (optarg, "RISE", 4)) )
-	  {
-	    cout<<"Unrecognized trigger slope argument: "<<optarg<<endl;
-	    usage (argv[0]);
-	  }
-        break;
-      case 'E':
-        MinAmp[0] = atof (optarg);
-        break;
-      case 'F':
-        MinAmp[1] = atof (optarg);
-        break;
-      case 'G':
-        MinAmp[2] = atof (optarg);
-        break;
-      case 'H':
-        MinAmp[3] = atof (optarg);
-        break;
-      case 'p':
+      break;
+    case 't':
+      strcpy (trlevl, optarg);
+      opt_t = 1;
+      break;
+    case 's':
+      strcpy (trslop, "TRIG:A:EDGE:SLO ");
+      strcat (trslop, optarg);
+      opt_s = 1;
+      if ( (strncmp (optarg, "FALL", 4)) && (strncmp (optarg, "RISE", 4)) )
+	{
+	  cout<<"Unrecognized trigger slope argument: "<<optarg<<endl;
+	  usage (argv[0]);
+	}
+      break;
+    case 'E':
+      MinAmp[0] = atof (optarg);
+      break;
+    case 'F':
+      MinAmp[1] = atof (optarg);
+      break;
+    case 'G':
+      MinAmp[2] = atof (optarg);
+      break;
+    case 'H':
+      MinAmp[3] = atof (optarg);
+      break;
+    case 'p':
 #if defined DPO4104B || defined MDO3054
-        strcpy (htrpos, "HOR:POS ");
+      strcpy (htrpos, "HOR:POS ");
 #elif defined TDS3054B
-        strcpy (htrpos, "HOR:TRIG:POS ");
+      strcpy (htrpos, "HOR:TRIG:POS ");
 #endif
-        strcat (htrpos, optarg);
-        opt_p = 1;
-        break;
-      case 'b':
-        strcpy (hsamp, "HOR:SCA ");
-        strcat (hsamp, optarg);
-        opt_b = 1;
-        break;
-      case 'T':
-        TestMode = atoi (optarg);
-        break;
-      case '?':
-        if (isprint (optopt))
+      strcat (htrpos, optarg);
+      opt_p = 1;
+      break;
+    case 'b':
+      strcpy (hsamp, "HOR:SCA ");
+      strcat (hsamp, optarg);
+      opt_b = 1;
+      break;
+    case 'T':
+      TestMode = atoi (optarg);
+      break;
+    case '?':
+      if (isprint (optopt))
         {
 	  cout<<"Unknown option `-"<<optopt<<"'.\n";
 	  usage (argv[0]);
         }
-        else
+      else
         {
 	  cout<<"Unknown option character `\\x"<<optopt<<"'.\n";
 	  usage (argv[0]);
         }
         break;
-      default:
-        usage (argv[0]);
-    }
-  }
-
-  if (argv[optind] == NULL)
-  {
-    // no more arguments left to parse
-  }
-  else
-  {
-    cout<<"Unknown argument: "<<argv[optind]<<endl;
-    usage (argv[0]);
-  }
-
-#if defined DPO4104B || MDO3054
-  for (i=0; i<4; i++)
-  {
-    if ( (strstr(coupl[i],"AC")) && (strstr(imped[i],"FIF")) )
-    {
-      cout<<"\nERROR! AC coupling and 50 Ohm impedance are incompatible!\n\n"<<endl;
+    case 'x':
+      xmlFile=optarg;
+      xml=true;
+      break;
+    default:
       usage (argv[0]);
     }
   }
-#endif
-
-  if (quiet)
-  {
-    getopt_Verbose=0;
-    TEK_Verbose=0;
-    ipc_Verbose=0;
-  }
   
-
+  if(xml) xmlSettings();
+  
+  if (argv[optind] == NULL)
+    {
+      // no more arguments left to parse
+    }
+  else
+    {
+      cout<<"Unknown argument: "<<argv[optind]<<endl;
+      usage (argv[0]);
+    }
+  
+#if defined DPO4104B || MDO3054
+  for (i=0; i<4; i++)
+    {
+      if ( (strstr(coupl[i],"AC")) && (strstr(imped[i],"FIF")) )
+	{
+	  cout<<"\nERROR! AC coupling and 50 Ohm impedance are incompatible!\n\n"<<endl;
+	  usage (argv[0]);
+	}
+    }
+#endif
+  
+  if (quiet)
+    {
+      getopt_Verbose=0;
+      TEK_Verbose=0;
+      ipc_Verbose=0;
+    }
+ 
+  cout<<vscal[1]<<endl;
+ 
 }
 
-  
 void ScopeParameters::usage (char *prog)
 {
   /*
@@ -725,3 +737,97 @@ void ScopeParameters::usage (char *prog)
 
  }
 
+ void ScopeParameters::xmlSettings(){
+
+   XmlParser settings(xmlFile, TEK_Verbose);
+   
+   stringstream ss;
+   string starter;
+   for(int i=0; i<4; i++){
+     ss<<i+1;
+     if(settings.fieldExists("ch"+ss.str())){
+       int on = (int)settings.getValue("ch"+ss.str());
+       get_wave[i] = on;
+     }
+     cout<<"vsca"<<ss.str()<<" "<<settings.fieldExists("vsca"+ss.str())<<endl;
+     if(settings.fieldExists("vsca"+ss.str())){
+       cout<<"vsca"<<ss.str()<<endl;
+       starter = "CH"+ss.str()+":SCA ";
+       strcpy (vscal[i], starter.c_str());
+       strcat (vscal[i], settings.getStringValue("vsca"+ss.str()).c_str());
+     }
+     if(settings.fieldExists("pos"+ss.str())){
+       starter="CH"+ss.str()+":POS ";
+       strcpy (pos[0], starter.c_str());
+       strcat (pos[0], settings.getStringValue("pos"+ss.str()).c_str());
+       if(i==0) opt_A = 1;
+       if(i==1) opt_B = 1;
+       if(i==2) opt_C = 1;
+       if(i==3) opt_D = 1;
+     }
+     if(settings.fieldExists("amp"+ss.str())){
+       MinAmp[i] = settings.getValue("amp"+ss.str());
+     }     
+     ss.str("");
+   }
+
+   if(settings.fieldExists("hsamp")){     
+     strcpy (hsamp, "HOR:SCA ");
+     strcat (hsamp, settings.getStringValue("hsamp").c_str());
+     opt_b = 1;
+   }
+   if(settings.fieldExists("trslope")){
+     strcpy (trslop, "TRIG:A:EDGE:SLO ");
+     strcat (trslop, settings.getStringValue("trslope").c_str());
+     opt_s = 1;
+     if ( (strncmp (settings.getStringValue("trslope").c_str(), "FALL", 4)) && (strncmp (settings.getStringValue("trslope").c_str(), "RISE", 4)) )
+       {
+	 cout<<"Unrecognized trigger slope argument: "<<settings.getStringValue("trslope").c_str()<<endl;
+	 //usage (argv[0]);
+       }
+   }
+   if(settings.fieldExists("pretrigger")){
+#if defined DPO4104B || defined MDO3054
+     strcpy (htrpos, "HOR:POS ");
+#elif defined TDS3054B
+     strcpy (htrpos, "HOR:TRIG:POS ");
+#endif
+     strcat (htrpos, settings.getStringValue("pretrigger").c_str());
+     opt_p = 1;
+   }
+   if(settings.fieldExists("trlevel")){
+     strcpy (trlevl, settings.getStringValue("trlevel").c_str());
+     opt_t = 1;
+   }
+   if(settings.fieldExists("length")){
+     RecLen = (int) settings.getValue("length");
+     opt_l = 1;
+     if ( RecLen <= 0 || RecLen > 20000000 ) {
+       cout<<"Invalid waveform recordlength argument: "<<settings.getValue("length")<<endl;
+       //usage (argv[0]);
+     }
+   }
+   if(settings.fieldExists("trsrc")){
+     int trigsource = (int) settings.getValue("trsrc");
+     opt_c = 1;
+     if ( trigsource>0 && trigsource<10 )  {
+       strcpy (trsrc, "TRIG:A:EDGE:SOU CH");	// trigger source channel 1, 2, 3, or 4
+       strcat (trsrc,  settings.getStringValue("trsrc").c_str());
+     }
+#if defined DPO4104B
+     else
+       if ( trigsource==0 ) 
+	 strcpy (trsrc, "TRIG:A:EDGE:SOU AUX");	// aux trigger source
+     
+     
+#elif defined TDS3054B
+       else
+	 if ( trigsource==0 ) 
+	   strcpy (trsrc, "TRIG:A:EDGE:SOU EXT");	// ext trigger source
+	 else if ( trigsource==10 ) 
+	   strcpy (trsrc, "TRIG:A:EDGE:SOU EXT10");	// ext10 trigger source
+   }
+#endif
+
+ 
+ }

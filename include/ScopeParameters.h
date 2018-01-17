@@ -6,6 +6,7 @@
 using namespace std;
 
 #include "tekdaq.h"
+#include "xmlParser.h"
 
 #ifndef SCOPEPARAMS_h
 #define SCOPEPARAMS_h
@@ -23,6 +24,7 @@ class ScopeParameters{
   void  Defaults ();        //print defaults
   void printVerbose();      //print verbose
 
+  void xmlSettings();
 
 
   //Parameters are all public, since I didn't want to write 65 get/set methods...
@@ -99,15 +101,7 @@ class ScopeParameters{
   int got_wave[4];				// successful wave read flag
   char *outfile;				// output file name
 
-
-
-
-
-
-
-
-
-
+  string xmlFile;
 
 };
 
