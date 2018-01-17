@@ -26,6 +26,7 @@ class ScopeParameters{
 
   void xmlSettings();
 
+  char *ZeroArg;
 
   //Parameters are all public, since I didn't want to write 65 get/set methods...
   
@@ -102,6 +103,9 @@ class ScopeParameters{
   char *outfile;				// output file name
 
   string xmlFile;
+  string xmlOutFile;
+  bool writeXml;
+    
 
 };
 

@@ -16,6 +16,8 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
     should be the first call made from main.
   */
 
+  ZeroArg=argv[0];
+
   int i, c, wavenum, trigsource;
   char chan[2];
 
@@ -185,6 +187,7 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
       {"hsamp",		required_argument, 0, 'b'},	// sample rate
       {"tmode",     	required_argument, 0, 'T'},	// test mode
       {"xml",		required_argument, 0, 'x'},	// logic trigger mode
+      {"xmlout",	required_argument, 0, 'y'},	// logic trigger mode
       {0, 0, 0, 0}
     };
 
@@ -554,7 +557,12 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
     case 'x':
       xmlFile=optarg;
       xml=true;
+      break;  
+    case 'y':
+      xmlOutFile=optarg;
+      writeXml=true;
       break;
+
     default:
       usage (argv[0]);
     }
@@ -589,9 +597,7 @@ ScopeParameters::ScopeParameters(int argc, char *argv[]){
       TEK_Verbose=0;
       ipc_Verbose=0;
     }
- 
-  cout<<vscal[1]<<endl;
- 
+  
 }
 
 void ScopeParameters::usage (char *prog)
@@ -665,7 +671,8 @@ void ScopeParameters::usage (char *prog)
   cout<<"\t\t\t\tnote that this can effect the sample rate.\n\n";
   cout<<"-p,\t--pretrigger=PRE_TRIG\tSpecify the amount of pretrigger (percent).\n\n";
   cout<<"-T,\t--tmode=NUM\t\tTest mode; tmode = 1 bybasses all scope commands\n\n";
-
+  cout<<"-x,\t--xml=FILE\t\tUse settings defined in an xml file named FILE\n\n";
+  cout<<"\t--xmlout=FILE\t\tSave scope settings in xml format to FILE\n\n";
   exit (-1);
 }
 
@@ -737,97 +744,149 @@ void ScopeParameters::usage (char *prog)
 
  }
 
- void ScopeParameters::xmlSettings(){
+//get setting from XML file
+void ScopeParameters::xmlSettings(){
 
-   XmlParser settings(xmlFile, TEK_Verbose);
-   
-   stringstream ss;
-   string starter;
-   for(int i=0; i<4; i++){
-     ss<<i+1;
-     if(settings.fieldExists("ch"+ss.str())){
-       int on = (int)settings.getValue("ch"+ss.str());
-       get_wave[i] = on;
-     }
-     cout<<"vsca"<<ss.str()<<" "<<settings.fieldExists("vsca"+ss.str())<<endl;
-     if(settings.fieldExists("vsca"+ss.str())){
-       cout<<"vsca"<<ss.str()<<endl;
-       starter = "CH"+ss.str()+":SCA ";
-       strcpy (vscal[i], starter.c_str());
-       strcat (vscal[i], settings.getStringValue("vsca"+ss.str()).c_str());
-     }
-     if(settings.fieldExists("pos"+ss.str())){
-       starter="CH"+ss.str()+":POS ";
-       strcpy (pos[0], starter.c_str());
-       strcat (pos[0], settings.getStringValue("pos"+ss.str()).c_str());
-       if(i==0) opt_A = 1;
-       if(i==1) opt_B = 1;
-       if(i==2) opt_C = 1;
-       if(i==3) opt_D = 1;
-     }
-     if(settings.fieldExists("amp"+ss.str())){
-       MinAmp[i] = settings.getValue("amp"+ss.str());
-     }     
-     ss.str("");
-   }
+  XmlParser settings(xmlFile, TEK_Verbose);
+  
+  stringstream ss;
+  string starter;
+  string ch;
 
-   if(settings.fieldExists("hsamp")){     
-     strcpy (hsamp, "HOR:SCA ");
-     strcat (hsamp, settings.getStringValue("hsamp").c_str());
-     opt_b = 1;
-   }
-   if(settings.fieldExists("trslope")){
-     strcpy (trslop, "TRIG:A:EDGE:SLO ");
-     strcat (trslop, settings.getStringValue("trslope").c_str());
-     opt_s = 1;
+  //loop over channels
+  for(int i=0; i<4; i++){
+    ss<<i+1;
+    ch=ss.str();
+    ss.str("");
+    
+    //Channels to record
+    if(settings.fieldExists("ch"+ch)){
+      int on = (int)settings.getValue("ch"+ch);
+      get_wave[i] = on;
+    }
+    //vertical scale
+    if(settings.fieldExists("vsca"+ch)){
+      starter = "CH"+ch+":SCA ";
+      strcpy (vscal[i], starter.c_str());
+      strcat (vscal[i], settings.getStringValue("vsca"+ch).c_str());
+    }
+    //vertical position
+    if(settings.fieldExists("pos"+ch)){
+      starter="CH"+ch+":POS ";
+      strcpy (pos[0], starter.c_str());
+      strcat (pos[0], settings.getStringValue("pos"+ch).c_str());
+      if(i==0) opt_A = 1;
+      if(i==1) opt_B = 1;
+      if(i==2) opt_C = 1;
+      if(i==3) opt_D = 1;
+    }
+    //minimum amplitude
+    if(settings.fieldExists("amp"+ch)){
+      MinAmp[i] = settings.getValue("amp"+ch);
+    }     
+    //coupling
+    if(settings.fieldExists("coupl"+ch)){
+      strcpy (coupl[i], "CH1:COUPL ");
+      strcat (coupl[i], settings.getStringValue("coupl"+ch).c_str());
+      opt_P = 1;
+      if ( (strncmp (settings.getStringValue("coupl"+ch).c_str(), "AC", 2)) && (strncmp (settings.getStringValue("coupl"+ch).c_str(), "DC", 2)) )
+	{
+	  cout<<"Unrecognized coupling argument: "<<settings.getStringValue("coupl"+ch).c_str()<<endl;
+	  usage (ZeroArg);
+	}
+    }
+    //impedance
+    if(settings.fieldExists("imped"+ch)){
+#if defined DPO4104B || defined MDO3054
+      strcpy (imped[i], "CH1:TERM ");
+#elif defined TDS3054B
+      strcpy (imped[i], "CH1:IMP ");
+#endif
+      string optarg=settings.getStringValue("imped"+ch);
+      
+      if(
+#if defined DPO4104B || defined TDS3054B
+	 strncmp(optarg.c_str(),"FIF",3) && strncmp(optarg.c_str(),"MEG",3)
+#elif defined MDO3054
+	 strncmp(optarg.c_str(),"FIF",3) && strncmp(optarg.c_str(),"75",2) && strncmp(optarg.c_str(),"MEG",3)
+#endif
+	 ){
+	cout<<"Error! Invalid impedance: "<<optarg.c_str()<<endl;
+	usage (ZeroArg);
+      }
+      strcat (imped[i], optarg.c_str());
+      opt_5 = 1;
+    }
+    
+  }
+  
+  //horizontal sampling
+  if(settings.fieldExists("hsamp")){     
+    strcpy (hsamp, "HOR:SCA ");
+    strcat (hsamp, settings.getStringValue("hsamp").c_str());
+    opt_b = 1;
+  }
+
+  //trigger slope
+  if(settings.fieldExists("trslope")){
+    strcpy (trslop, "TRIG:A:EDGE:SLO ");
+    strcat (trslop, settings.getStringValue("trslope").c_str());
+    opt_s = 1;
      if ( (strncmp (settings.getStringValue("trslope").c_str(), "FALL", 4)) && (strncmp (settings.getStringValue("trslope").c_str(), "RISE", 4)) )
        {
 	 cout<<"Unrecognized trigger slope argument: "<<settings.getStringValue("trslope").c_str()<<endl;
-	 //usage (argv[0]);
+	 usage (ZeroArg);
        }
-   }
-   if(settings.fieldExists("pretrigger")){
-#if defined DPO4104B || defined MDO3054
-     strcpy (htrpos, "HOR:POS ");
-#elif defined TDS3054B
-     strcpy (htrpos, "HOR:TRIG:POS ");
-#endif
-     strcat (htrpos, settings.getStringValue("pretrigger").c_str());
-     opt_p = 1;
-   }
-   if(settings.fieldExists("trlevel")){
-     strcpy (trlevl, settings.getStringValue("trlevel").c_str());
-     opt_t = 1;
-   }
-   if(settings.fieldExists("length")){
-     RecLen = (int) settings.getValue("length");
-     opt_l = 1;
-     if ( RecLen <= 0 || RecLen > 20000000 ) {
-       cout<<"Invalid waveform recordlength argument: "<<settings.getValue("length")<<endl;
-       //usage (argv[0]);
-     }
-   }
-   if(settings.fieldExists("trsrc")){
-     int trigsource = (int) settings.getValue("trsrc");
-     opt_c = 1;
-     if ( trigsource>0 && trigsource<10 )  {
-       strcpy (trsrc, "TRIG:A:EDGE:SOU CH");	// trigger source channel 1, 2, 3, or 4
-       strcat (trsrc,  settings.getStringValue("trsrc").c_str());
-     }
-#if defined DPO4104B
-     else
-       if ( trigsource==0 ) 
-	 strcpy (trsrc, "TRIG:A:EDGE:SOU AUX");	// aux trigger source
-     
-     
-#elif defined TDS3054B
-       else
-	 if ( trigsource==0 ) 
-	   strcpy (trsrc, "TRIG:A:EDGE:SOU EXT");	// ext trigger source
-	 else if ( trigsource==10 ) 
-	   strcpy (trsrc, "TRIG:A:EDGE:SOU EXT10");	// ext10 trigger source
-   }
-#endif
+  }
 
- 
- }
+  //pretrigger
+  if(settings.fieldExists("pretrigger")){
+#if defined DPO4104B || defined MDO3054
+    strcpy (htrpos, "HOR:POS ");
+#elif defined TDS3054B
+    strcpy (htrpos, "HOR:TRIG:POS ");
+#endif
+    strcat (htrpos, settings.getStringValue("pretrigger").c_str());
+     opt_p = 1;
+  }
+
+  //trigger level
+  if(settings.fieldExists("trlevel")){
+    strcpy (trlevl, settings.getStringValue("trlevel").c_str());
+    opt_t = 1;
+  }
+  //record length
+  if(settings.fieldExists("length")){
+    RecLen = (int) settings.getValue("length");
+    opt_l = 1;
+    if ( RecLen <= 0 || RecLen > 20000000 ) {
+      cout<<"Invalid waveform recordlength argument: "<<settings.getValue("length")<<endl;
+      usage (ZeroArg);
+    }
+  }
+
+  //trigger source
+  if(settings.fieldExists("trsrc")){
+    int trigsource = (int) settings.getValue("trsrc");
+    opt_c = 1;
+    if ( trigsource>0 && trigsource<10 )  {
+      strcpy (trsrc, "TRIG:A:EDGE:SOU CH");	// trigger source channel 1, 2, 3, or 4
+      strcat (trsrc,  settings.getStringValue("trsrc").c_str());
+    }
+#if defined DPO4104B
+    else
+      if ( trigsource==0 ) 
+	strcpy (trsrc, "TRIG:A:EDGE:SOU AUX");	// aux trigger source
+    
+    
+#elif defined TDS3054B
+      else
+	if ( trigsource==0 ) 
+	  strcpy (trsrc, "TRIG:A:EDGE:SOU EXT");	// ext trigger source
+	else if ( trigsource==10 ) 
+	  strcpy (trsrc, "TRIG:A:EDGE:SOU EXT10");	// ext10 trigger source
+  }
+#endif
+  
+  
+}

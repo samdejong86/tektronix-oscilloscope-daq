@@ -44,6 +44,8 @@ class Scope{
 
   void RunComplete();  /*called when run is finished*/
 
+  void GenerateXml(string filename);  /*Generates an xml file of the 'scope's settings*/
+
   int rewrite;   // flag to write full report text
 
 

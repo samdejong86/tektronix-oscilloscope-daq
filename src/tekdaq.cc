@@ -36,6 +36,10 @@ int main (int argc, char *argv[]){
 
   }
 
+  //write settings to xml file
+  if(Params->writeXml)
+    tekScope.GenerateXml(Params->xmlOutFile);
+
   tekScope.rewrite = 1;            // flag to write full report text
 
   if(!Params->TestMode)

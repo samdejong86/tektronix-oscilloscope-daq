@@ -1,10 +1,13 @@
 #include <sstream>
+#include <vector>
+#include <string>
 
 using namespace std;
 
 #include "ScopeParameters.h"
 #include "tekdaq.h"
 #include "Scope.h"
+#include "xmlParser.h"
 
 /*
  *  The guts of these methods were written by Paul Poffenburger
@@ -798,5 +801,139 @@ void Scope::RunComplete(){
 
 #endif
 
+
+}
+
+
+
+vector<string> split(const char *str, char c = ' ')
+{
+    vector<string> result;
+
+    do
+    {
+        const char *begin = str;
+
+        while(*str != c && *str)
+            str++;
+
+        result.push_back(string(begin, str));
+    } while (0 != *str++);
+
+    return result;
+}
+
+
+//generate an xml file of the scope settings for this run
+void Scope::GenerateXml(string filename){
+
+  stringstream ss;
+  string retVal;
+  XmlParser outSettings;
+  string ch;
+  
+
+  for(int i=0; i<4; i++){
+    ss<<i+1;
+    ch=ss.str();
+    ss.str("");
+    
+    //which channels are on
+    ss<<Parameters->get_wave[i];  
+    outSettings.addValue("ch"+ch, ss.str());
+    ss.str("");
+    
+    if(Parameters->get_wave[i]){
+      
+      //scale for each channel
+      TekQry("CH"+ch+":SCALE?", MyString);
+      sscanf (MyString, "%[^\n]", MyString);    
+      retVal=MyString;
+      outSettings.addValue("vsca"+ch, retVal);
+      
+      //position of each channel
+      TekQry("CH"+ch+":POSITION?", MyString);
+      sscanf (MyString, "%[^\n]", MyString);    
+      retVal=MyString; 
+      outSettings.addValue("pos"+ch, retVal);
+      
+      //coupling of each channel
+      TekQry("CH"+ch+":COUPLING?", MyString);
+      sscanf (MyString, "%[^\n]", MyString);    
+      retVal=MyString;
+      outSettings.addValue("coupl"+ch, retVal);  
+      
+      //input impedance for each channel
+#if defined DPO4104B || defined MDO3054
+      TekQry("CH"+ch+":TERM?", MyString);
+#elif defined TDS3054B
+      TekQry("CH"+ch+":IMP?", MyString);
+#endif
+      sscanf (MyString, "%[^\n]", MyString);  
+      retVal=MyString;
+      outSettings.addValue("imped"+ch, retVal);  
+      
+      //minimum amplitude for each channel
+      ss<<Parameters->MinAmp[i];
+      outSettings.addValue("amp"+ch, ss.str());   
+
+      ss.str("");
+
+
+    }
+
+  }
+
+  //trigger source
+  TekQry("TRIGGER:A:EDGE:SOURCE?", MyString);
+  sscanf (MyString, "%[^\n]", MyString);  
+  retVal=MyString;
+  string trgsrc;
+#if defined DPO4104B
+  if(retVal.find("AUX") != std::string::npos)
+    trgsrc=0;    
+#elif defined TDS3054B    
+  if(retVal.find("EXT10") != std::string::npos)
+    trgsrc="10";
+  else if(retVal.find("EXT10") != std::string::npos)
+    trgsrc="0";
+#endif
+  if(retVal.find("CH") != std::string::npos) 
+    trgsrc=retVal.substr(2);  
+  outSettings.addValue("trsrc", trgsrc);
+  
+  //trigger source  
+  TekQry("TRIGGER:A:EDGE:SLOPE?", MyString);
+  sscanf (MyString, "%[^\n]", MyString);   
+  retVal=MyString;
+  outSettings.addValue("trslope", retVal);
+  
+  //trigger level
+  TekQry("TRIGGER:A:LEVEL?", MyString);
+  sscanf (MyString, "%[^\n]", MyString);   
+  retVal=MyString;
+  outSettings.addValue("trlevel", retVal);
+
+  //pretrigger and horizontal sampling
+  TekQry("HORIZONTAL?", MyString);
+  sscanf (MyString, "%[^\n]", MyString);   
+  retVal=MyString;
+    
+  char token=';';
+  vector<string> s = split(retVal.c_str(), token);
+  
+  outSettings.addValue("pretrigger", s[1]);
+  outSettings.addValue("hsamp", s[2]);
+    
+  //record length
+  TekQry("HOR:RECORDLENGTH?", MyString);
+  sscanf (MyString, "%[^\n]", MyString);   
+  retVal=MyString;
+  outSettings.addValue("length", retVal);
+
+
+
+
+  outSettings.writeXml(filename);
 
 }

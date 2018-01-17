@@ -202,6 +202,12 @@ public:
     
   }
   
+  void addValue(std::string tag, std::string val){
+    tags.push_back(tag);
+    vals.push_back(val);
+  }
+  
+
 
   bool fieldExists(std::string xmlField){
     bool exist=false;
@@ -216,7 +222,24 @@ public:
     for(int i=0; i<(int)tags.size(); i++) std::cout<<tags[i]<<"\t"<<vals[i]<<std::endl;
   }
 
- 
+  void writeXml(std::string filename){
+
+    std::ofstream outfile;
+    outfile.open(filename.c_str(), std::ofstream::out);
+    
+
+    outfile<<xmlStartTag<<endl;
+    outfile<<"  "<<startTag<<endl;
+    for(int i=0; i<(int)tags.size(); i++){
+      outfile<<"    <"<<tags[i]<<">"<<endl;
+      outfile<<"      "<<vals[i]<<endl;    
+      outfile<<"    </"<<tags[i]<<">"<<endl;
+    }
+    outfile<<"  "<<endTag<<endl;
+    outfile<<xmlEndTag<<endl;
+  }
+
+
  
  
  private:
