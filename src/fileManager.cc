@@ -129,17 +129,21 @@ void fileManager::CloseFile(){
     files += fname+"_"+ss.str()+".root ";
     ss.str("");
   }
-  string targetFile = fname+".root ";
+  string targetFile = fname+".root";
   
-  system(("rm -rf "+targetFile).c_str());
+  remove(targetFile.c_str());
 
-  string command = "hadd -v -f "+targetFile+files;
+  string command = "hadd -v -f "+targetFile+" "+files;
 
   cout<<"Merging temporary files"<<endl;
   system(command.c_str());
   
-  string rmCommand="rm -rf "+files;
-  system(rmCommand.c_str());
+  for(int i=0; i<counter/saveInterval; i++){
+    ss<<i;
+    remove((fname+"_"+ss.str()+".root").c_str());
+    ss.str("");
+  }
+
 
 
 }
