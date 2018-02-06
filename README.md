@@ -57,6 +57,9 @@
   There is a ROOT script included for displaying the waveforms (draw.C). To use it, run			 
   	.x draw.C("tek.root", ch, ev) 
   at the ROOT prompt. ch is the channel number, ev is the event number.
+
+  While running, the software produces temporary files named <filename>_<n>.root, each containing some number of entries (set by the tekdaq -r command). If the software closes without crashing, these are merged into <filename>.root and deleted.  
+
   
   ## Acknowledgements 
   

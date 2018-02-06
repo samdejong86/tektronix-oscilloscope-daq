@@ -619,10 +619,11 @@ void Scope::AcquireWaves()
 
     event++;
 
+    /*
     if ( ! (event%Parameters->ReportFreq) )
     {
       Counter (event);
-    }
+      }*/
     sleep (Parameters->interval);
   }
 

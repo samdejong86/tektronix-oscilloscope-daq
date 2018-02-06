@@ -12,9 +12,9 @@ void fileManager::OpenFile(){
   struct stat buf;
 
   //check if file exists, prompt for overwrite
-  if ( ! stat (fname.c_str(), &buf) )
+  if ( ! stat ((fname+".root").c_str(), &buf) )
     {
-      cout<<"Overwrite existing file `"<<fname<<"'? (y/n) ";
+      cout<<"Overwrite existing file `"<<fname<<".root"<<"'? (y/n) ";
       fflush (stdout);
       if (getc (stdin) != 'y')
 	{
@@ -23,7 +23,12 @@ void fileManager::OpenFile(){
       cout<<endl;
     }
   
-  f = new TFile(fname.c_str(), "RECREATE");  //open TFile
+
+  counter=0;
+
+  string firstFile = fname+"_0.root";
+
+  f = new TFile(firstFile.c_str(), "RECREATE");  //open TFile
   t = new TTree("data", "Waveform data");  //initalize the TTree
 
   //resize the vector of vectors to have 4 entries
@@ -58,16 +63,91 @@ void fileManager::OpenFile(){
   }
 }
 
+void fileManager::OpenNewFile(){
+  cout<<"number of events so far = "<<counter<<endl;
+  
+
+  t->Write(); //write the data ntuple
+  f->Close();
+  //t->Delete();
+  
+  
+
+  stringstream ss;
+  ss<<counter/saveInterval;
+
+  string thisFile=fname+"_"+ss.str()+".root";
+  
+  ss.str("");
+
+
+  f = new TFile(thisFile.c_str(), "RECREATE");  //open TFile
+  t = new TTree("data", "Waveform data");  //initalize the TTree
+
+  for(int i=0; i<4; i++){
+    ss<<i+1;
+    string branch="ch"+ss.str();
+    ss.str("");
+    if(Parameters->get_wave[i]==1)  //only add channels that are requested
+      t->Branch(branch.c_str(), &data[i]);
+  }
+
+  //xinc is the width of the time bins
+  t->Branch("xinc", &xin, "xinc/D");
+  //time is the unix time that the event occured
+  t->Branch("time", &time, "time/D");
+
+  //add amplitude branches
+  if(Parameters->measureData){
+    if(Parameters->get_wave[0]==1)
+      t->Branch("pkch1", &CH1, "pkch1/D");
+    if(Parameters->get_wave[1]==1)
+      t->Branch("pkch2", &CH2, "pkch2/D");
+    if(Parameters->get_wave[2]==1)
+      t->Branch("pkch3", &CH3, "pkch3/D");
+    if(Parameters->get_wave[3]==1)
+      t->Branch("pkch4", &CH4, "pkch4/D");
+  }
+
+
+}
+
+
+
+
 //close the root file
 void fileManager::CloseFile(){
 
   t->Write(); //write the data ntuple
   f->Close();
 
+  string files="";
+
+  stringstream ss;
+  for(int i=0; i<counter/saveInterval; i++){
+    ss<<i;
+    files += fname+"_"+ss.str()+".root ";
+    ss.str("");
+  }
+  string targetFile = fname+".root ";
+  
+  system(("rm -rf "+targetFile).c_str());
+
+  string command = "hadd -v -f "+targetFile+files;
+
+  cout<<"Merging temporary files"<<endl;
+  system(command.c_str());
+  
+  string rmCommand="rm -rf "+files;
+  system(rmCommand.c_str());
+
+
 }
 
 //add event
 void fileManager::addEvent(char Curve[4][CLEN], int ByteCount[4]){
+
+  if(counter!=0&&counter%saveInterval==0) OpenNewFile();
 
   //get current time
   time=markTime();
@@ -101,6 +181,7 @@ void fileManager::addEvent(char Curve[4][CLEN], int ByteCount[4]){
   for(int i=0; i<4; i++)
     data[i].clear();
    
+  counter++;
 
 }
 
