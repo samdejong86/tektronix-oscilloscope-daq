@@ -47,6 +47,7 @@ class fileManager{
   void addEvent(char Curve[4][CLEN], int ByteCount[4]); /*add an event to the file*/
   void parseHeader(char Header[CLEN], int ByteCount);   /*parse the header containing x&y offsets and scale factors*/
 
+  void DeleteDir();
 
 
  private:
@@ -66,6 +67,9 @@ class fileManager{
   ScopeParameters *Parameters;
   int saveInterval;
   int counter;
+  
+  string dirname;
+  string finalFilename;
 
   
 

@@ -10,6 +10,7 @@ using namespace std;
 void fileManager::OpenFile(){
 
   struct stat buf;
+  stringstream ss;
 
   //check if file exists, prompt for overwrite
   if ( ! stat ((fname+".root").c_str(), &buf) )
@@ -23,6 +24,21 @@ void fileManager::OpenFile(){
       cout<<endl;
     }
   
+  ss<<int(markTime());
+  dirname="./temp_"+ss.str();
+  ss.str("");
+
+  string makeCommand = "mkdir -p "+dirname;
+
+  int ret = system(makeCommand.c_str());
+  if(ret!=0){
+    cout<<"fileManager: Error creating temporary file directory"<<endl;
+    exit(0);
+  }
+
+
+  finalFilename=fname+".root";
+  fname=dirname+"/"+fname;
 
   counter=0;
 
@@ -34,7 +50,6 @@ void fileManager::OpenFile(){
   //resize the vector of vectors to have 4 entries
   data.resize(4);  
 
-  stringstream ss;
   
   //add vectors to TTree
   for(int i=0; i<4; i++){
@@ -129,7 +144,7 @@ void fileManager::CloseFile(){
     files += fname+"_"+ss.str()+".root ";
     ss.str("");
   }
-  string targetFile = fname+".root";
+  string targetFile = finalFilename;
   
   remove(targetFile.c_str());
 
@@ -144,6 +159,7 @@ void fileManager::CloseFile(){
     ss.str("");
   }
 
+  DeleteDir();
 
 
 }
@@ -283,5 +299,16 @@ void fileManager::ParseMetaData(string Header){
   //fill and write metadata ttree
   meta->Fill();
   meta->Write();
+  
+}
+
+
+void fileManager::DeleteDir(){
+  string command = "rmdir "+dirname+"/";  
+
+  int ret = system(command.c_str());
+  if(ret!=0)
+    cout<<"fileManager: Could not delete temporary directory"<<endl;
+  
   
 }
