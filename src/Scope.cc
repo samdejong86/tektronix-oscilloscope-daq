@@ -9,6 +9,8 @@ using namespace std;
 #include "Scope.h"
 #include "xmlParser.h"
 
+extern volatile sig_atomic_t flag;
+
 /*
  *  The guts of these methods were written by Paul Poffenburger
  */
@@ -120,7 +122,7 @@ void Scope::TekCmd(string cmd)
 
   status = viWrite (scope, (ViBuf) cmd.c_str(), strlen (cmd.c_str()), &retCount);
 
-  if (status < VI_SUCCESS)
+  if (status < VI_SUCCESS&&flag==0)
   {
     viStatusDesc (scope, status, desc);
     cout<<"Error writing to scope: "<<cmd<<endl;
@@ -139,7 +141,7 @@ void Scope::TekQry(string cmd, char rtn[SLEN])
   TekCmd (cmd);
   memset(rtn, 0, SLEN*sizeof(char));			// clear the read buffer
   status = viRead (scope, (ViBuf) rtn, SLEN, &retCount);
-  if (status < VI_SUCCESS)
+  if (status < VI_SUCCESS&&flag==0)
   {
     viStatusDesc (scope, status, desc);
 
@@ -169,7 +171,7 @@ int Scope::WavQry(string cmd, char rtn[CLEN])
   TekCmd (cmd);
   memset(rtn, 0, CLEN*sizeof(char));			// clear the read buffer
   status = viRead (scope, (ViBuf) rtn, CLEN, &retCount);
-  if (status < VI_SUCCESS)
+  if (status < VI_SUCCESS&&flag==0)
   {
     viStatusDesc (scope, status, desc);
     cout<<"Error writing to scope: "<<cmd<<endl;
@@ -476,7 +478,8 @@ void Scope::AcquireWaves()
 
   tdur = time (NULL);					// initialize run timer
   t0 = time (NULL);				        // initialize aq_timeout timer
-  while ( 1 ) {
+  while ( flag==0 ) {
+ 
     if ( Parameters->aq_timeout >= 0 ) {			        // acquistion timeout must have been set...
       if ( time (NULL) - t0 >= Parameters->aq_timeout ) {
         cout<<"Acquisition Timeout!"<<endl;
@@ -543,7 +546,7 @@ void Scope::AcquireWaves()
   TekCmd ("HEADER ON");					// this turns on the ":CURVE" header
   TekCmd ("VERB ON");					// ":CURVE" rather than ":CURV"...
 
-  while ( 1 )
+  while ( flag==0 )
   {
     if ( event == Parameters->nevent )  {
       break;						// break out of loop and quit

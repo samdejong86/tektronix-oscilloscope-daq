@@ -13,13 +13,20 @@ using namespace std;
 #include "xmlParser.h"
 
 
+extern volatile sig_atomic_t flag=0;
+
+void my_function(int sig){ // can be called asynchronously
+  flag = 1; // set flag
+}
+
+
+
 int main (int argc, char *argv[]){
+  
+  
+  signal(SIGINT, my_function); 
 
-  /*
-  XmlParser settings("settings.xml", false);
-
-  settings.print();
-  */
+  //flag=0;
 
   //initalize ScopeParameters object
   ScopeParameters *Params = new ScopeParameters(argc, argv);

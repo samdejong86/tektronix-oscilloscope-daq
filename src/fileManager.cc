@@ -6,6 +6,8 @@ using namespace std;
 
 #include "fileManager.h"
 
+extern volatile sig_atomic_t flag;
+
 //open a file
 void fileManager::OpenFile(){
 
@@ -41,6 +43,7 @@ void fileManager::OpenFile(){
   fname=dirname+"/"+fname;
 
   counter=0;
+  fileCounter=0;
 
   string firstFile = fname+"_0.root";
 
@@ -89,7 +92,8 @@ void fileManager::OpenNewFile(){
   
 
   stringstream ss;
-  ss<<counter/saveInterval;
+  fileCounter++;
+  ss<<fileCounter;
 
   string thisFile=fname+"_"+ss.str()+".root";
   
@@ -136,10 +140,27 @@ void fileManager::CloseFile(){
   t->Write(); //write the data ntuple
   f->Close();
 
+  if(fileCounter==0){
+    string mvCommand = "mv "+fname+"_0.root "+finalFilename;
+    
+    
+    int ret = system(mvCommand.c_str());
+    
+    if(ret!=0){
+      cout<<"fileManager: Error moving temporary file. Temporary directory will not be removed\n";
+    } else {
+      DeleteDir();	
+    }
+    
+    return;
+    
+  }
+
+
   string files="";
 
   stringstream ss;
-  for(int i=0; i<counter/saveInterval; i++){
+  for(int i=0; i<fileCounter; i++){
     ss<<i;
     files += fname+"_"+ss.str()+".root ";
     ss.str("");
@@ -151,21 +172,32 @@ void fileManager::CloseFile(){
   string command = "hadd -v -f "+targetFile+" "+files;
 
   cout<<"Merging temporary files"<<endl;
-  system(command.c_str());
-  
-  for(int i=0; i<counter/saveInterval; i++){
-    ss<<i;
-    remove((fname+"_"+ss.str()+".root").c_str());
-    ss.str("");
+  int ret = system(command.c_str());
+
+  bool mergeError=false;
+
+  if(ret!=0){
+    cout<<"fileManager: Error with merger command. Temporary files will not be deleted"<<endl;
+    mergeError=true;
+ 
   }
+ 
+  if(!mergeError){
+    for(int i=0; i<fileCounter+1; i++){
+      ss<<i;
+      remove((fname+"_"+ss.str()+".root").c_str());
+      ss.str("");
+    }
 
-  DeleteDir();
-
+    DeleteDir();
+  }
 
 }
 
 //add event
 void fileManager::addEvent(char Curve[4][CLEN], int ByteCount[4]){
+
+
 
   if(counter!=0&&counter%saveInterval==0) OpenNewFile();
 

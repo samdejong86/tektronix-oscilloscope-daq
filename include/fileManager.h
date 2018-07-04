@@ -70,6 +70,7 @@ class fileManager{
   
   string dirname;
   string finalFilename;
+  int fileCounter;
 
   
 

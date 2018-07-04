@@ -16,6 +16,7 @@
 #include <termios.h>
 #include <libgen.h>
 #include <sys/types.h>
+#include <signal.h> 
 
 #include <sys/io.h>
 #include <sys/perm.h>
@@ -72,5 +73,7 @@
 /**********************************************************************************/
 
 
+//volatile sig_atomic_t flag;
+void my_function(int sig);
 
 
