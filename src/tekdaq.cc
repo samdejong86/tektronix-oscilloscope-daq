@@ -13,7 +13,7 @@ using namespace std;
 #include "xmlParser.h"
 
 
-extern volatile sig_atomic_t flag=0;
+volatile sig_atomic_t flag=0;
 
 void my_function(int sig){ // can be called asynchronously
   flag = 1; // set flag

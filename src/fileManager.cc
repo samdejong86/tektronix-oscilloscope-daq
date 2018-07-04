@@ -27,7 +27,7 @@ void fileManager::OpenFile(){
     }
   
   ss<<int(markTime());
-  dirname="./temp_"+ss.str();
+  dirname="./"+fname+"_"+ss.str();
   ss.str("");
 
   string makeCommand = "mkdir -p "+dirname;
@@ -160,7 +160,7 @@ void fileManager::CloseFile(){
   string files="";
 
   stringstream ss;
-  for(int i=0; i<fileCounter; i++){
+  for(int i=0; i<=fileCounter; i++){
     ss<<i;
     files += fname+"_"+ss.str()+".root ";
     ss.str("");
@@ -183,7 +183,7 @@ void fileManager::CloseFile(){
   }
  
   if(!mergeError){
-    for(int i=0; i<fileCounter+1; i++){
+    for(int i=0; i<=fileCounter; i++){
       ss<<i;
       remove((fname+"_"+ss.str()+".root").c_str());
       ss.str("");
